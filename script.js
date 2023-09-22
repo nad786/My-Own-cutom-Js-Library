@@ -1,7 +1,29 @@
-const tempObj = MyLibrary.create(
-    {list: [{name: "Hi", label: "label1", value: "value1"}, 
-    {label: "lable2", value: "value2",name: "Hello"}], 
-    key: "Name", flag: false, nested1: {nested2: "Test"}}, {parentSelector: ".container"})
+// const tempObj = MyLibrary.create(
+//     {list: [{name: "Hi", label: "label1", value: "value1"}, 
+//     {label: "lable2", value: "value2",name: "Hello"}], 
+//     key: "Name", flag: false, nested1: {nested2: "Test"}}, {parentSelector: ".container"})
+
+
+
+class MainClass {
+    key = "test";
+    name = "Nadeem";
+    persons = {list: ["first", "second"]};
+    initEvents() {
+        document.querySelector('#test').addEventListener("keyup", this.fn.bind(this));
+    }
+    fn() {
+        console.log("Hello");
+    }
+    get() {
+        console.log("test");
+    }
+}
+let obj = new MainClass();
+obj.initEvents();
+obj = MyLibrary.create(obj);
+// o = MyLibrary.create({persons: {list: ["Hi", "Hello"]}});
+
 
 // const listArr  =new MyLibrary({listArr: {list: [{keyName: "test"}]}});
 

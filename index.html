@@ -11,7 +11,7 @@
     <script src="script.js" defer></script>
   </head>
   <body>
-    <div class="container">
+    <!-- <div class="container">
         <ul md-for="list">
             <li><div md-text="label"></div><span md-text="value"></span>
                 <li>
@@ -24,11 +24,13 @@
         <h3 md-text="nested1.nested2">Hide/ show Element with not</h3> 
             <input md-input="nested1.nested2" md-attr="data-id = nested1.nested2">
             <h3 md-text="nested1.nested2"></h3>
-    </div>
+    </div> -->
 
    
-    <input md-input="name">
+    <input md-input="name" id="test">
     <div md-text="name"></div>
-
+    <div md-for="persons.list">
+      <label md-text></label>
+    </div>
   </body>
 </html>

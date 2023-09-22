@@ -35,16 +35,16 @@ class MyLibrary {
   mappedActionForPerformance(obj) {
     const mappedKeys = this.generateKeyWithDotSeperated(obj);
     mappedKeys.forEach(item => {
-      if(this.container.querySelector(`[md-for="${item}"]`)) {
+      if(this.container.querySelector(`[md-for^="${item}"]`)) {
         this.actionMapper.loopCheck[item] = true
       }
-      if(this.container.querySelector(`[md-if="${item}"]`)) {
+      if(this.container.querySelector(`[md-if^="${item}"]`)) {
         this.actionMapper.ifCheck[item] = true;
       }
-      if(this.container.querySelector(`[md-text="${item}"]`)) {
+      if(this.container.querySelector(`[md-text^="${item}"]`)) {
         this.actionMapper.textCheck[item] = true;
       }
-      if(this.container.querySelector(`[md-input="${item}"]`)) {
+      if(this.container.querySelector(`[md-input^="${item}"]`)) {
         this.actionMapper.inputCheck[item] = true;
       }
       if(this.container.querySelector(`[md-attr*="${item}"]`)) {
@@ -194,14 +194,15 @@ class MyLibrary {
       if (Array.isArray(obj[item])) {
         const forList = this.container.querySelectorAll(`[md-for="${key+item}"]`);
         forList.forEach((element) => {
-          if (!this.listContainer[item]) {
-            this.listContainer[item] = [];
+          const targetKey = (key+item).split(".")[0];
+          if (!this.listContainer[targetKey]) {
+            this.listContainer[targetKey] = [];
           }
-          if (!this.listElements[item]) {
-            this.listElements[item] = [];
+          if (!this.listElements[targetKey]) {
+            this.listElements[targetKey] = [];
           }
-          this.listContainer[item].push(element);
-          this.listElements[item].push(
+          this.listContainer[targetKey].push(element);
+          this.listElements[targetKey].push(
             element.firstElementChild.cloneNode(true)
           );
           this.removeAllchildNodes(element);
@@ -213,12 +214,13 @@ class MyLibrary {
   }
 
   generateDefaultObjectType(data, nestedKey = "") {
+    if(nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
       return data.map((item, index) => {
         return {
           type: "add",
           target: data,
-          currentPath: `${nestedKey ? nestedKey + "." : ""}${index}`,
+          currentPath: `${nestedKey}${index}`,
           newValue: item,
         };
       });
@@ -226,7 +228,7 @@ class MyLibrary {
       let tempArr = [];
       for (let item in data) {
         if (typeof data[item] == "object") {
-          const temp = this.generateDefaultObjectType(data[item], item);
+          const temp = this.generateDefaultObjectType(data[item], nestedKey+item);
           tempArr = [...tempArr, ...temp];
         } else {
           tempArr.push({
