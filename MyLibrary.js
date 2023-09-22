@@ -5,6 +5,13 @@ class MyLibrary {
   targetMap = {"loop": "performLoopOperation", if: "performIfStatementOperation", text: "performTextOperation", input: "performInputOperation", attr: "performAttraibuteAdding"};
   container = document;
   targetOperation = 'performOperation';
+  actionMapper = {
+    loopCheck: {},
+    ifCheck: {},
+    textCheck: {},
+    inputCheck: {},
+    attrCheck: {}
+  };
   constructor(obj, rest = {}) {
     const { parentSelector = "html", target = null } = rest;
     if(target) {
@@ -16,12 +23,34 @@ class MyLibrary {
   }
 
   init(obj) {
+    this.mappedActionForPerformance(obj)
     const data = this.generateDefaultObjectType(obj);
     this.initForLoop(obj);
     this[this.targetOperation](data);
     if(this.targetOperation == "performOperation" || this.targetOperation == 'performInputOperation') {
       this.initInputChanges(data);
     }
+  }
+
+  mappedActionForPerformance(obj) {
+    const mappedKeys = this.generateKeyWithDotSeperated(obj);
+    mappedKeys.forEach(item => {
+      if(this.container.querySelector(`[md-for="${item}"]`)) {
+        this.actionMapper.loopCheck[item] = true
+      }
+      if(this.container.querySelector(`[md-if="${item}"]`)) {
+        this.actionMapper.ifCheck[item] = true;
+      }
+      if(this.container.querySelector(`[md-text="${item}"]`)) {
+        this.actionMapper.textCheck[item] = true;
+      }
+      if(this.container.querySelector(`[md-input="${item}"]`)) {
+        this.actionMapper.inputCheck[item] = true;
+      }
+      if(this.container.querySelector(`[md-attr*="${item}"]`)) {
+        this.actionMapper.attrCheck[item] = true;
+      }
+    })
   }
 
   getMainKeyFromCurrentPath(currentPath) {
@@ -36,11 +65,21 @@ class MyLibrary {
     data.forEach((item) => {
       if (item.property != "length") {
         const key = this.getMainKeyFromCurrentPath(item.currentPath);
-        this.performLoopOperation(item, key);
-        this.performTextOperation(item, key);
-        this.performInputOperation(item, key);
-        this.performIfStatementOperation(item, key);
-        this.performAttraibuteAdding(item, key);
+        if(this.actionMapper.loopCheck[key]) {
+          this.performLoopOperation(item, key);
+        }
+        if(this.actionMapper.textCheck[item.currentPath]) {
+          this.performTextOperation(item, key);
+        }
+        if(this.actionMapper.inputCheck[item.currentPath]) {
+          this.performInputOperation(item, key);
+        }
+        if(this.actionMapper.ifCheck[item.currentPath]) {
+          this.performIfStatementOperation(item, key);
+        }
+        if(this.actionMapper.attrCheck[item.currentPath]) {
+          this.performAttraibuteAdding(item, key);
+        }
       }
     });
   }
