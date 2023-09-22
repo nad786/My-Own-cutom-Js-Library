@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" />
+    <script src="./plugin/observable-slim.js"></script>
+    <script src="MyLibrary.js"></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="container">
+        <ul md-for="list">
+            <li><div md-text="label"></div><span md-text="value"></span>
+                <div md-text="key"></div>
+                <input md-input="key">
+                <div md-text="nested1.nested2"></div>
+                <input md-input="nested1.nested2">
+                <li>
+        </ul>
+        <div md-for="listArr.list">
+                <label md-text="keyName"></label>
+        </div>
+        <h3 md-text="key"></h3>
+        <h3 md-if="flag" md-text="nested1.nested2">Hide/ show Element</h3> 
+        <h3 md-if="!flag" md-text="nested1.nested2">Hide/ show Element with not</h3> 
+            <input md-input="nested1.nested2">
+            <h3 md-text="nested1.nested2"></h3>
+    </div>
+
+   
+
+  </body>
+</html>
