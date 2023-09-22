@@ -2,9 +2,14 @@ class MyLibrary {
   elements = [];
   listElements = {};
   listContainer = {};
+  targetMap = {"loop": "performLoopOperation", if: "performIfStatementOperation", text: "performTextOperation", input: "performInputOperation", attr: "performAttraibuteAdding"};
   container = document;
+  targetOperation = 'performOperation';
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", target = "performOperation" } = rest;
+    const { parentSelector = "html", target = null } = rest;
+    if(target) {
+      this.targetOperation = targetMap[target] ? targetMap[target] : "performOperation"
+    }
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.init(obj);
@@ -13,8 +18,10 @@ class MyLibrary {
   init(obj) {
     const data = this.generateDefaultObjectType(obj);
     this.initForLoop(obj);
-    this.performOperation(data);
-    this.initInputChanges(data);
+    this[this.targetOperation](data);
+    if(this.targetOperation == "performOperation" || this.targetOperation == 'performInputOperation') {
+      this.initInputChanges(data);
+    }
   }
 
   getMainKeyFromCurrentPath(currentPath) {
@@ -40,12 +47,16 @@ class MyLibrary {
 
   performAttraibuteAdding(item, key) {
     const elements = this.container.querySelectorAll(
-      `[md-attr]`
+      `[md-attr*="${item.currentPath}"]`
     );
     if (elements.length) {
       elements.forEach((element) => {
-        // this.(item, element);
-        
+        const multiAttr = element.getAttribute('md-attr').split(";");
+        multiAttr.forEach(singleAttr => {
+          const attr = singleAttr.split("=").map(item => item.trim());
+          const val = this.getValueFromkeyWithDot(item.newValue, attr[1]);
+          element.setAttribute(attr[0], val);
+        })
       });
     }
   }
@@ -212,7 +223,7 @@ class MyLibrary {
   }
 
   detectChanges(data) {
-    this.performOperation(data);
+    this[this.targetOperation](data);
   }
 
   performLoopEachItem({ item, key, elements }) {
@@ -304,9 +315,11 @@ class MyLibrary {
   }
 
   getValueFromkeyWithDot(obj, key) {
-    key.split(".").map((item) => {
-      obj = obj?.[item];
-    });
+    if(typeof obj == 'object') {
+      key.split(".").map((item) => {
+        obj = obj?.[item];
+      });
+    }
     return obj;
   }
 
@@ -399,5 +412,10 @@ class MyLibrary {
         });
       }
     }
+  }
+
+  static create(obj, rest = {}) {
+    const instance = new MyLibrary(obj, rest);
+    return instance.lib;
   }
 }
