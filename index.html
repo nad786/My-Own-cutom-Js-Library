@@ -53,15 +53,17 @@
 const instance = MyLibrary.create({
     todoItem: "",
     textarea: "",
-    list: [],
+    list: ["Default Item"],
     person: { fname: "john", lname: "doe", email: "nad@nad.com" },
-});
+});           
 document.getElementById("clickMe").addEventListener("click", (e) => {
     instance.textarea = JSON.stringify(instance.person);
   });             
   document.getElementById("todo").addEventListener("click", (e) => {
-    instance.list.push(instance.todoItem);
-  });          
+    if(instance.todoItem && instance.list[instance.list.length-1] != instance.todoItem) {
+        instance.list.push(instance.todoItem);
+    }
+  });                       
         </pre>
       </div>
     </div>
@@ -76,7 +78,9 @@ document.getElementById("clickMe").addEventListener("click", (e) => {
         instance.textarea = JSON.stringify(instance.person);
       });
       document.getElementById("todo").addEventListener("click", (e) => {
-        instance.list.push(instance.todoItem);
+        if(instance.todoItem && instance.list[instance.list.length-1] != instance.todoItem) {
+            instance.list.push(instance.todoItem);
+        }
       });
     </script>
   </body>
