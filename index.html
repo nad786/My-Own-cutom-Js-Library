@@ -16,18 +16,18 @@
 
     <form>
             <label for="fname">First name:</label><br>
-            <input type="text" md-input="fname"><span md-text="fname"></span><br>
+            <input type="text" md-input="person.fname"><span md-text="person.fname"></span><br>
             <label for="lname">Last name:</label><br>
-            <input type="text" md-input="lname"><span md-text="lname"></span><br>
+            <input type="text" md-input="person.lname"><span md-text="person.lname"></span><br>
             <label for="Email">Email</label><br>
-            <input type="text" md-input="email"><span md-text="email"></span><br>
+            <input type="text" md-input="person.email"><span md-text="person.email"></span><br>
             <button type="button" id="clickMe">Click Me</button>
           </form>
 
     <script>
-         const instance = MyLibrary.create({list: ["1st item", "2nd item"], fname: "john", lname: 'doe', email: "nad@nad.com" }  );
+         const instance = MyLibrary.create({list: ["1st item", "2nd item"], person: { fname: "john", lname: 'doe', email: "nad@nad.com" } } );
         document.getElementById("clickMe").addEventListener("click", (e) => {
-            console.log({...instance})
+            console.log({...instance.person})
         })
     </script>
     
