@@ -1,12 +1,15 @@
-// const tempObj = MyLibrary.create(
-//     {list: [{name: "Hi", label: "label1", value: "value1"}, 
-//     {label: "lable2", value: "value2",name: "Hello"}], 
-//     key: "Name", flag: false, nested1: {nested2: "Test"}}, {parentSelector: ".container"})
+console.time('start')
+const tempObj = MyLibrary.create(
+    {list: [
+        {name: "Hi", label: "label1", value: "value1"}, 
+        {label: "lable2", value: "value2",name: "Hello"}], 
+    key: "Name", flag: false, nested1: {nested2: "Test"}}, {parentSelector: ".container"})
 
 
 
 class MainClass {
     task = {taskid: {10: "Some Value"}};
+    name = "Nad"
     initEvents() {
         // document.querySelector('#test').addEventListener("keyup", this.fn.bind(this));
     }
@@ -20,16 +23,4 @@ class MainClass {
 let obj = new MainClass();
 obj.initEvents();
 obj = MyLibrary.create(obj);
-// o = MyLibrary.create({persons: {list: ["Hi", "Hello"]}});
-
-
-// const listArr  =new MyLibrary({listArr: {list: [{keyName: "test"}]}});
-
-
-// const person = new MyLibrary({name: "Nadeem"});
-
-// let obj = {name: ""};
-// document.querySelector('#test').addEventListener("keyup", (e) => {
-//     document.querySelector('#testlabel').textContent = e.target.value;
-//     obj.name = e.target.value;
-// })
+console.timeEnd("start")

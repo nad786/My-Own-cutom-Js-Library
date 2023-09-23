@@ -2,59 +2,69 @@ class MyLibrary {
   elements = [];
   listElements = {};
   listContainer = {};
-  targetMap = {"loop": "performLoopOperation", if: "performIfStatementOperation", text: "performTextOperation", input: "performInputOperation", attr: "performAttraibuteAdding"};
+  targetMap = {
+    loop: "performLoopOperation",
+    if: "performIfStatementOperation",
+    text: "performTextOperation",
+    input: "performInputOperation",
+    attr: "performAttraibuteAdding",
+  };
   container = document;
-  opertaionMapper = "performOperation"
-  targetOperation = 'performOperation';
+  opertaionMapper = "performOperation";
+  targetOperation = "performOperation";
   actionMapper = {
     loopCheck: {},
     ifCheck: {},
     textCheck: {},
     inputCheck: {},
-    attrCheck: {}
+    attrCheck: {},
   };
   constructor(obj, rest = {}) {
     const { parentSelector = "html", target = null } = rest;
-    if(target) {
-      this.opertaionMapper = this.targetMap[target] ? this.targetMap[target] : "performOperation"
-      this.targetOperation = 'opertaionMapperExecution';
+    if (target) {
+      this.opertaionMapper = this.targetMap[target]
+        ? this.targetMap[target]
+        : "performOperation";
+      this.targetOperation = "opertaionMapperExecution";
     }
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.init(obj);
   }
 
- 
-
   init(obj) {
-    this.mappedActionForPerformance(obj)
+    this.mappedActionForPerformance(obj);
     const data = this.generateDefaultObjectType(obj);
     this.initForLoop(obj);
     this[this.targetOperation](data);
-    if(this.targetOperation == "performOperation" || this.targetOperation == 'performInputOperation') {
+    if (
+      this.targetOperation == "performOperation" ||
+      this.targetOperation == "performInputOperation"
+    ) {
       this.initInputChanges(data);
     }
   }
 
   mappedActionForPerformance(obj) {
     const mappedKeys = this.generateKeyWithDotSeperated(obj);
-    mappedKeys.forEach(item => {
-      if(this.container.querySelector(`[md-for^="${item}"]`)) {
-        this.actionMapper.loopCheck[item] = true
+    mappedKeys.forEach((item) => {
+      const key = this.getMainKeyFromCurrentPath(item);
+      if (this.container.querySelector(`[md-for^="${key}"]`)) {
+        this.actionMapper.loopCheck[key] = true;
       }
-      if(this.container.querySelector(`[md-if*="${item}"]`)) {
-        this.actionMapper.ifCheck[item] = true;
+      if (this.container.querySelector(`[md-if*="${key}"]`)) {
+        this.actionMapper.ifCheck[key] = true;
       }
-      if(this.container.querySelector(`[md-text="${item}"]`)) {
+      if (this.container.querySelector(`[md-text^="${item}"]`)) {
         this.actionMapper.textCheck[item] = true;
       }
-      if(this.container.querySelector(`[md-input="${item}"]`)) {
+      if (this.container.querySelector(`[md-input^="${item}"]`)) {
         this.actionMapper.inputCheck[item] = true;
       }
-      if(this.container.querySelector(`[md-attr*="${item}"]`)) {
-        this.actionMapper.attrCheck[item] = true;
+      if (this.container.querySelector(`[md-attr*="${key}"]`)) {
+        this.actionMapper.attrCheck[key] = true;
       }
-    })
+    });
   }
 
   getMainKeyFromCurrentPath(currentPath) {
@@ -78,39 +88,58 @@ class MyLibrary {
     data.forEach((item) => {
       if (item.property != "length") {
         const key = this.getMainKeyFromCurrentPath(item.currentPath);
-        if(this.actionMapper.loopCheck[key]) {
+        if (this.actionMapper.loopCheck[key]) {
           this.performLoopOperation(item, key);
         }
-        if(this.actionMapper.textCheck[item.currentPath]) {
+        if (
+          this.actionMapper.textCheck[item.currentPath] ||
+          this.actionMapper.textCheck[key]
+        ) {
           this.performTextOperation(item, key);
         }
-        if(this.actionMapper.inputCheck[item.currentPath]) {
+        if (
+          this.actionMapper.inputCheck[item.currentPath] ||
+          this.actionMapper.inputCheck[key]
+        ) {
           this.performInputOperation(item, key);
         }
-        if(this.actionMapper.ifCheck[item.currentPath]) {
+        if (
+          this.actionMapper.ifCheck[item.currentPath] ||
+          this.actionMapper.ifCheck[key]
+        ) {
           this.performIfStatementOperation(item, key);
         }
-        if(this.actionMapper.attrCheck[item.currentPath]) {
+        if (
+          this.actionMapper.attrCheck[item.currentPath] ||
+          this.actionMapper.attrCheck[key]
+        ) {
           this.performAttraibuteAdding(item, key);
         }
       }
     });
   }
 
-  performAttraibuteAdding(item, key) {
+  performAttraibuteAdding(item, key, ele) {
     const elements = this.container.querySelectorAll(
       `[md-attr*="${item.currentPath}"]`
     );
     if (elements.length) {
       elements.forEach((element) => {
-        const multiAttr = element.getAttribute('md-attr').split(";");
-        multiAttr.forEach(singleAttr => {
-          const attr = singleAttr.split("=").map(item => item.trim());
-          const val = this.getValueFromkeyWithDot(item.newValue, attr[1]);
-          element.setAttribute(attr[0], val);
-        })
+        this.updateAttributeValueForAttr(item, element);
       });
     }
+  }
+
+  updateAttributeValueForAttr(item, element, key = "") {
+    const multiAttr = element.getAttribute("md-attr").split(";");
+    multiAttr.forEach((singleAttr) => {
+      const attr = singleAttr.split("=").map((item) => item.trim());
+      const val = this.getValueFromkeyWithDot(
+        item.newValue,
+        key ? key : attr[1]
+      );
+      element.setAttribute(attr[0], val);
+    });
   }
 
   performInputKeyUpEvent(e) {
@@ -201,13 +230,15 @@ class MyLibrary {
     }
   }
 
-  initForLoop(obj, key="") {
-    if(key) key+=".";
+  initForLoop(obj, key = "") {
+    if (key) key += ".";
     for (let item in obj) {
       if (Array.isArray(obj[item])) {
-        const forList = this.container.querySelectorAll(`[md-for="${key+item}"]`);
+        const forList = this.container.querySelectorAll(
+          `[md-for="${key + item}"]`
+        );
         forList.forEach((element) => {
-          const targetKey = (key+item).split(".")[0];
+          const targetKey = (key + item).split(".")[0];
           if (!this.listContainer[targetKey]) {
             this.listContainer[targetKey] = [];
           }
@@ -221,13 +252,13 @@ class MyLibrary {
           this.removeAllchildNodes(element);
         });
       } else if (typeof obj[item] == "object") {
-        this.initForLoop(obj[item], key+item);
+        this.initForLoop(obj[item], key + item);
       }
     }
   }
 
   generateDefaultObjectType(data, nestedKey = "") {
-    if(nestedKey) nestedKey += ".";
+    if (nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
       return data.map((item, index) => {
         return {
@@ -241,7 +272,10 @@ class MyLibrary {
       let tempArr = [];
       for (let item in data) {
         if (typeof data[item] == "object") {
-          const temp = this.generateDefaultObjectType(data[item], nestedKey+item);
+          const temp = this.generateDefaultObjectType(
+            data[item],
+            nestedKey + item
+          );
           tempArr = [...tempArr, ...temp];
         } else {
           tempArr.push({
@@ -276,10 +310,6 @@ class MyLibrary {
     return keys;
   }
 
-  detectChanges(data) {
-    this[this.targetOperation](data);
-  }
-
   performLoopEachItem({ item, key, elements }) {
     if (item.type == "add") {
       this.addPropertyInLoop({ item, key, elements });
@@ -291,32 +321,63 @@ class MyLibrary {
   }
 
   //
-  addOperationInloopForEachElements(item, key, ele) {
-        
-      
+  addAttraibuteInsideLoop(item, ele) {
+    const attrEle = ele.querySelectorAll("[md-attr]");
+    if (!attrEle.length) {
+      return;
+    }
+    const generatePath = this.generateKeyWithDotSeperated(item.newValue);
+    generatePath.forEach((key) => {
+      attrEle.forEach((element) => {
+        let attrVal = element.getAttribute("md-attr");
+        if (attrVal.includes(key)) {
+          let flag = false;
+          let path = "";
+          const list = attrVal.split(";").map((temp) => {
+            temp = temp.split("=").map((temp) => temp.trim());
+            if (temp[1] == key) {
+              flag = true;
+              path = item.currentPath + "." + key;
+              temp[1] = path;
+            }
+            return temp;
+          });
+          if(flag) {
+            this.actionMapper.attrCheck[path] = true;
+          element.setAttribute(
+            "md-attr",
+            list.map((item) => item.join("=")).join(";")
+          );
+          this.updateAttributeValueForAttr(item, element, key);
+          }
+          
+        }
+      });
+    });
   }
 
   addPropertyInLoop({ item, key, elements }) {
     elements.forEach((element, index) => {
-      const temp = element.querySelectorAll(`[md-text^="${item.currentPath}"]`);
-      const tempInput = element.querySelectorAll(
+      const temp = element.querySelector(`[md-text^="${item.currentPath}"]`);
+      const tempInput = element.querySelector(
         `[md-input^="${item.currentPath}"]`
       );
-      const ifEle = element.querySelectorAll(`[md-if^="${item.currentPath}"]`);
-      const ifNotEle = element.querySelectorAll(
-        `[md-if^="!${item.currentPath}"]`
+      const ifEle = element.querySelector(`[md-if^="${item.currentPath}"]`);
+      const ifNotEle = element.querySelector(`[md-if^="!${item.currentPath}"]`);
+      const attrEle = element.querySelector(
+        `[md-attr^="!${item.currentPath}"]`
       );
-      if (temp.length || tempInput.length || ifEle.length || ifNotEle.length) {
+      if (temp || tempInput || ifEle || ifNotEle || attrEle) {
         this.updatePropertyInLoop({ item, key });
       } else {
         const ele = this.listElements[key][index].cloneNode(true);
-        if(ele.hasAttribute('md-for') || ele.querySelector('[md-for]')) {
+        if (ele.hasAttribute("md-for") || ele.querySelector("[md-for]")) {
           this.addNestedLoopOp(item, ele, item.currentPath);
         }
-          this.modifyMdTextValue(item, ele, true);
-          this.modifyMdInputValue(item, ele, true);
-          this.hideShowLement(item, ele, true);
-        
+        this.modifyMdTextValue(item, ele, true);
+        this.modifyMdInputValue(item, ele, true);
+        this.hideShowLement(item, ele, true);
+        this.addAttraibuteInsideLoop(item, ele);
         element.appendChild(ele);
       }
     });
@@ -324,20 +385,17 @@ class MyLibrary {
 
   addNestedLoopOp(item, ele, key) {
     if (ele.hasAttribute("md-for")) {
-      // const attr = ele.getAttribute("md-for");
       const values = this.getValueFromkeyWithDot(this.lib, key);
       const defaultNestedValues = this.generateDefaultObjectType(values);
       const node = ele.firstElementChild.cloneNode(true);
-      ele.removeChild(ele.firstElementChild)
+      ele.removeChild(ele.firstElementChild);
       defaultNestedValues.forEach((element, index) => {
         const clon = node.cloneNode(true);
-        this.addNestedLoopAttribute(clon, 'md-text',element.currentPath);
+        this.addNestedLoopAttribute(clon, "md-text", element.currentPath);
+        this.addNestedLoopAttribute(clon, "md-input", element.currentPath);
+        this.addNestedLoopAttribute(clon, "md-if", element.currentPath);
         ele.appendChild(clon);
-        // ele.
-        // clon.setAttribute('md-for', item.currentPath+"." + attr + "."+index);
-        // ele.parentNode.insertBefore(clon, ele)
-      })
-      
+      });
     } else {
       ele.querySelectorAll("[md-for]").forEach((element) => {
         console.log(element);
@@ -346,14 +404,14 @@ class MyLibrary {
   }
 
   addNestedLoopAttribute(ele, selector, path) {
-    if(ele.hasAttribute(selector)) {
+    if (ele.hasAttribute(selector)) {
       const key = ele.getAttribute(selector);
-      ele.setAttribute(selector, path + `${key ? "."+key: ""}`)
+      ele.setAttribute(selector, path + `${key ? "." + key : ""}`);
     } else {
       const elements = ele.querySelectorAll(`[${selector}]`);
-      elements.forEach(element => {
-        this.addNestedLoopAttribute(element, selector, path)
-      })
+      elements.forEach((element) => {
+        this.addNestedLoopAttribute(element, selector, path);
+      });
     }
   }
 
@@ -365,7 +423,7 @@ class MyLibrary {
   //           console.log(element);
   //       })
   //   }
-    
+
   // }
 
   removeAllchildNodes(element) {
@@ -413,7 +471,7 @@ class MyLibrary {
   }
 
   getValueFromkeyWithDot(obj, key) {
-    if(typeof obj == 'object') {
+    if (typeof obj == "object") {
       key.split(".").map((item) => {
         obj = obj?.[item];
       });
@@ -510,6 +568,10 @@ class MyLibrary {
         });
       }
     }
+  }
+
+  detectChanges(data) {
+    this[this.targetOperation](data);
   }
 
   static create(obj, rest = {}) {
