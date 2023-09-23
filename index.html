@@ -1,35 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="./plugin/observable-slim.js"></script>
     <script src="./js/MyLibrary.js"></script>
-</head>
-<body>
-    
-    <ul md-for="list">
-        <li md-text></li>
-    </ul>
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        .right {
+            margin-top: 3rem;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="left">
+        <h1>dynamic to list</h1>
+        <input md-input="todoItem" />
+        <button id="todo">Add Item</button>
+        <ul md-for="list">
+          <li md-text></li>
+        </ul>
 
-    <form>
-            <label for="fname">First name:</label><br>
-            <input type="text" md-input="person.fname"><span md-text="person.fname"></span><br>
-            <label for="lname">Last name:</label><br>
-            <input type="text" md-input="person.lname"><span md-text="person.lname"></span><br>
-            <label for="Email">Email</label><br>
-            <input type="text" md-input="person.email"><span md-text="person.email"></span><br>
-            <button type="button" id="clickMe">Click Me</button>
-          </form>
-
+        <form>
+          <label for="fname">First name:</label><br />
+          <input type="text" md-input="person.fname" /><span
+            md-text="person.fname"
+          ></span
+          ><br />
+          <label for="lname">Last name:</label><br />
+          <input type="text" md-input="person.lname" /><span
+            md-text="person.lname"
+          ></span
+          ><br />
+          <label for="Email">Email</label><br />
+          <input type="text" md-input="person.email" /><span
+            md-text="person.email"
+          ></span
+          ><br />
+          <button type="button" id="clickMe">Click Me</button>
+        </form>
+        <div md-text="textarea"></div>
+      </div>
+      <div class="right">
+        <div>Js Code for the same</div>
+        <pre>
+const instance = MyLibrary.create({
+    todoItem: "",
+    textarea: "",
+    list: [],
+    person: { fname: "john", lname: "doe", email: "nad@nad.com" },
+});
+document.getElementById("clickMe").addEventListener("click", (e) => {
+    instance.textarea = JSON.stringify(instance.person);
+  });             
+  document.getElementById("todo").addEventListener("click", (e) => {
+    instance.list.push(instance.todoItem);
+  });          
+        </pre>
+      </div>
+    </div>
     <script>
-         const instance = MyLibrary.create({list: ["1st item", "2nd item"], person: { fname: "john", lname: 'doe', email: "nad@nad.com" } } );
-        document.getElementById("clickMe").addEventListener("click", (e) => {
-            console.log({...instance.person})
-        })
+      const instance = MyLibrary.create({
+        todoItem: "",
+        textarea: "",
+        list: ["Default Item"],
+        person: { fname: "john", lname: "doe", email: "nad@nad.com" },
+      });
+      document.getElementById("clickMe").addEventListener("click", (e) => {
+        instance.textarea = JSON.stringify(instance.person);
+      });
+      document.getElementById("todo").addEventListener("click", (e) => {
+        instance.list.push(instance.todoItem);
+      });
     </script>
-    
-</body>
+  </body>
 </html>
