@@ -7,7 +7,7 @@
     <title>Document</title>
     <link rel="stylesheet" />
     <script src="./plugin/observable-slim.js"></script>
-    <script src="MyLibrary.js"></script>
+    <script src="./js/MyLibrary.js"></script>
     <script src="script.js" defer></script>
   </head>
   <body>
@@ -29,8 +29,12 @@
    
     <input md-input="name" id="test">
     <div md-text="name"></div>
-    <div md-for="persons.list">
-      <label md-text></label>
+    <div md-for="persons">
+      <div md-for="hobby">
+        <label>Hello</label>
+        <div md-text="name">
+        </div>
+      </div>
     </div>
   </body>
 </html>

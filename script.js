@@ -6,9 +6,7 @@
 
 
 class MainClass {
-    key = "test";
-    name = "Nadeem";
-    persons = {list: ["first", "second"]};
+    persons = [{hobby: [{name: "First"}, {name: "second"}]}, {hobby: [{name: "1st"},{name: "2nd"}]}];
     initEvents() {
         document.querySelector('#test').addEventListener("keyup", this.fn.bind(this));
     }
