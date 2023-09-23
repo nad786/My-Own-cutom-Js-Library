@@ -21,10 +21,14 @@
             <input type="text" md-input="lname"><span md-text="lname"></span><br>
             <label for="Email">Email</label><br>
             <input type="text" md-input="email"><span md-text="email"></span>
+            <button type="button" id="clickMe">Click Me</button>
           </form>
 
     <script>
-         MyLibrary.create({list: ["1st item", "2nd item"], fname: "john", lname: 'doe', email: "nad@nad.com" }  )
+         const instance = MyLibrary.create({list: ["1st item", "2nd item"], fname: "john", lname: 'doe', email: "nad@nad.com" }  );
+        document.getElementById("clickMe").addEventListener("click", (e) => {
+            window.alert({...instance})
+        })
     </script>
     
 </body>
