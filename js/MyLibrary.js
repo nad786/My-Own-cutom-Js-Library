@@ -38,13 +38,13 @@ class MyLibrary {
       if(this.container.querySelector(`[md-for^="${item}"]`)) {
         this.actionMapper.loopCheck[item] = true
       }
-      if(this.container.querySelector(`[md-if^="${item}"]`)) {
+      if(this.container.querySelector(`[md-if*="${item}"]`)) {
         this.actionMapper.ifCheck[item] = true;
       }
-      if(this.container.querySelector(`[md-text^="${item}"]`)) {
+      if(this.container.querySelector(`[md-text="${item}"]`)) {
         this.actionMapper.textCheck[item] = true;
       }
-      if(this.container.querySelector(`[md-input^="${item}"]`)) {
+      if(this.container.querySelector(`[md-input="${item}"]`)) {
         this.actionMapper.inputCheck[item] = true;
       }
       if(this.container.querySelector(`[md-attr*="${item}"]`)) {
@@ -234,7 +234,7 @@ class MyLibrary {
           tempArr.push({
             type: "add",
             target: data,
-            currentPath: `${nestedKey ? nestedKey + "." : ""}${item}`,
+            currentPath: `${nestedKey}${item}`,
             newValue: data[item],
           });
         }
