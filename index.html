@@ -14,8 +14,17 @@
         <li md-text></li>
     </ul>
 
+    <form>
+            <label for="fname">First name:</label><br>
+            <input type="text" md-input="fname"><span md-text="fname"></span><br>
+            <label for="lname">Last name:</label><br>
+            <input type="text" md-input="lname"><span md-text="lname"></span><br>
+            <label for="Email">Email</label><br>
+            <input type="text" md-input="email"><span md-text="email"></span>
+          </form>
+
     <script>
-         MyLibrary.create({list: ["1st item", "2nd item"]}  )
+         MyLibrary.create({list: ["1st item", "2nd item"], fname: "john", lname: 'doe', email: "nad@nad.com" }  )
     </script>
     
 </body>
