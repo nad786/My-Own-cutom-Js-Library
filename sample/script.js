@@ -6,9 +6,9 @@
 
 
 class MainClass {
-    persons = [{hobby: [{name: "First"}, {name: "second"}]}, {hobby: [{name: "1st"},{name: "2nd"}]}];
+    task = {taskid: {10: "Some Value"}};
     initEvents() {
-        document.querySelector('#test').addEventListener("keyup", this.fn.bind(this));
+        // document.querySelector('#test').addEventListener("keyup", this.fn.bind(this));
     }
     fn() {
         console.log("Hello");

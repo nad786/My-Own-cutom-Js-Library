@@ -277,6 +277,12 @@ class MyLibrary {
     }
   }
 
+  //
+  addOperationInloopForEachElements(item, key, ele) {
+        
+      
+  }
+
   addPropertyInLoop({ item, key, elements }) {
     elements.forEach((element, index) => {
       const temp = element.querySelectorAll(`[md-text^="${item.currentPath}"]`);
@@ -291,13 +297,51 @@ class MyLibrary {
         this.updatePropertyInLoop({ item, key });
       } else {
         const ele = this.listElements[key][index].cloneNode(true);
-        // this.operateNestedLoop(item, ele);
-        this.modifyMdTextValue(item, ele, true);
-        this.modifyMdInputValue(item, ele, true);
-        this.hideShowLement(item, ele, true);
+        if(ele.hasAttribute('md-for') || ele.querySelector('[md-for]')) {
+          this.addNestedLoopOp(item, ele, item.currentPath);
+        }
+          this.modifyMdTextValue(item, ele, true);
+          this.modifyMdInputValue(item, ele, true);
+          this.hideShowLement(item, ele, true);
+        
         element.appendChild(ele);
       }
     });
+  }
+
+  addNestedLoopOp(item, ele, key) {
+    if (ele.hasAttribute("md-for")) {
+      // const attr = ele.getAttribute("md-for");
+      const values = this.getValueFromkeyWithDot(this.lib, key);
+      const defaultNestedValues = this.generateDefaultObjectType(values);
+      const node = ele.firstElementChild.cloneNode(true);
+      ele.removeChild(ele.firstElementChild)
+      defaultNestedValues.forEach((element, index) => {
+        const clon = node.cloneNode(true);
+        this.addNestedLoopAttribute(clon, 'md-text',element.currentPath);
+        ele.appendChild(clon);
+        // ele.
+        // clon.setAttribute('md-for', item.currentPath+"." + attr + "."+index);
+        // ele.parentNode.insertBefore(clon, ele)
+      })
+      
+    } else {
+      ele.querySelectorAll("[md-for]").forEach((element) => {
+        console.log(element);
+      });
+    }
+  }
+
+  addNestedLoopAttribute(ele, selector, path) {
+    if(ele.hasAttribute(selector)) {
+      const key = ele.getAttribute(selector);
+      ele.setAttribute(selector, path + "." + key)
+    } else {
+      const elements = ele.querySelectorAll(`[${selector}]`);
+      elements.forEach(element => {
+        this.addNestedLoopAttribute(element, selector, path)
+      })
+    }
   }
 
   // operateNestedLoop(item, ele) {
