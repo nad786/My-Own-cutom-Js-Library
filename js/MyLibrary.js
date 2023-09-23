@@ -4,6 +4,7 @@ class MyLibrary {
   listContainer = {};
   targetMap = {"loop": "performLoopOperation", if: "performIfStatementOperation", text: "performTextOperation", input: "performInputOperation", attr: "performAttraibuteAdding"};
   container = document;
+  opertaionMapper = "performOperation"
   targetOperation = 'performOperation';
   actionMapper = {
     loopCheck: {},
@@ -15,12 +16,15 @@ class MyLibrary {
   constructor(obj, rest = {}) {
     const { parentSelector = "html", target = null } = rest;
     if(target) {
-      this.targetOperation = targetMap[target] ? targetMap[target] : "performOperation"
+      this.opertaionMapper = this.targetMap[target] ? this.targetMap[target] : "performOperation"
+      this.targetOperation = 'opertaionMapperExecution';
     }
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.init(obj);
   }
+
+ 
 
   init(obj) {
     this.mappedActionForPerformance(obj)
@@ -59,6 +63,15 @@ class MyLibrary {
       key = currentPath.slice(0, currentPath.indexOf("."));
     }
     return key;
+  }
+
+  opertaionMapperExecution(data) {
+    data.forEach((item) => {
+      if (item.property != "length") {
+        const key = this.getMainKeyFromCurrentPath(item.currentPath);
+        this[this.opertaionMapper](item, key);
+      }
+    });
   }
 
   performOperation(data) {
@@ -335,7 +348,7 @@ class MyLibrary {
   addNestedLoopAttribute(ele, selector, path) {
     if(ele.hasAttribute(selector)) {
       const key = ele.getAttribute(selector);
-      ele.setAttribute(selector, path + "." + key)
+      ele.setAttribute(selector, path + `${key ? "."+key: ""}`)
     } else {
       const elements = ele.querySelectorAll(`[${selector}]`);
       elements.forEach(element => {
