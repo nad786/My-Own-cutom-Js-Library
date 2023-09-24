@@ -1,4 +1,4 @@
-class MyLibrary {
+class MiniJs {
   elements = [];
   listElements = {};
   listContainer = {};
@@ -575,7 +575,7 @@ class MyLibrary {
   }
 
   static create(obj, rest = {}) {
-    const instance = new MyLibrary(obj, rest);
+    const instance = new MiniJs(obj, rest);
     return instance.lib;
   }
 }

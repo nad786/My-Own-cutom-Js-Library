@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example of Loop</title>
+    <script src="../plugin/observable-slim.js"></script>
+    <script src="../js/MiniJs.js"></script>
+    <script src="md-for.js" defer></script>
+    <style>
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-2">
+      <div>
+        <h1>Add to do list</h1>
+        <input md-input="todoItem"><br>
+        <button id="todolist">Add List</button><br>
+        <div class="registration">
+            <ul md-for="todoList">
+                <li md-text>
+                </li>
+            </ul>
+        </div>
+        
+        <h1>Add User</h1>
+        <label>First Name</label><br>
+        <input md-input="user.fname"><br>
+        <label>First Name</label><br>
+        <input md-input="user.lname"><br>
+        <button id="addUser">Add User</button><br>
+        <div class="registration">
+          <ul md-for="users">
+              <li>
+                <span style="margin-right: 20px" md-text="fname"></span>
+                <span md-text="lname"></span>
+              </li>
+          </ul>
+      </div>
+      </div>
+      <div>
+        <h1>Js code for the same</h1>
+        <pre>
+const instance = MiniJs.create({
+  todoList: ["first list"],
+  todoItem: "",
+  users: [{fname: "john", lname: "doe"}],
+  user: {fname: "", lname: ""}     
+})
+document.getElementById("todolist").addEventListener("click", (e) => {
+    if(instance.todoItem) {
+        instance.todoList.push(instance.todoItem);
+    }
+});
+document.getElementById("addUser").addEventListener("click", (e) => {
+    if(instance.user.fname) {
+        instance.users.push(instance.user);
+    }
+})
+        </pre>
+      </div>
+    </div>
+   
+  </body>
+</html>

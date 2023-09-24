@@ -1,5 +1,5 @@
 console.time('start')
-const tempObj = MyLibrary.create(
+const tempObj = MiniJs.create(
     {list: [
         {name: "Hi", label: "label1", value: "value1"}, 
         {label: "lable2", value: "value2",name: "Hello"}], 
@@ -22,5 +22,5 @@ class MainClass {
 }
 let obj = new MainClass();
 obj.initEvents();
-obj = MyLibrary.create(obj);
+obj = MiniJs.create(obj);
 console.timeEnd("start")

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example of Loop</title>
+    <script src="../plugin/observable-slim.js"></script>
+    <script src="../js/MiniJs.js"></script>
+    <script src="md-if.js" defer></script>
+    <style>
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-2">
+      <div>
+            <h1>Hide and show Element with condition</h1>
+          <button id="toggle">Toggle</button>
+          <div md-if="display">First Element Show when display is true</div>
+          <div md-if="!display">Second Element Show when display is false</div>
+      </div>
+      <div>
+        <h1>Js code for the same</h1>
+        <pre>
+const instance = MiniJs.create({display: true});
+document.getElementById("toggle").addEventListener("click", (e) => {
+    instance.display = !instance.display;
+})
+        </pre>
+      </div>
+    </div>
+   
+  </body>
+</html>
