@@ -78,10 +78,10 @@ document.getElementById("clickMe").addEventListener("click", (e) => {
         instance.textarea = JSON.stringify(instance.person);
       });
       document.getElementById("todo").addEventListener("click", (e) => {
-        if(instance.todoItem && instance.list[instance.list.length-1] != instance.todoItem) {
+        if(instance.todoItem) {
             instance.list.push(instance.todoItem);
         }
       });
-    </script>
+    </script> 
   </body>
 </html>

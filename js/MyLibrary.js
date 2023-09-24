@@ -435,8 +435,8 @@ class MyLibrary {
   updatePropertyInLoop({ item, key, elements }) {
     this.listContainer[key].forEach((element, index) => {
       if (Array.isArray(item.newValue)) {
+        this.removeAllchildNodes(element);
         item.newValue.forEach((tempArr, index) => {
-          this.removeAllchildNodes(element);
           this.addPropertyInLoop({
             item: {
               ...item,
