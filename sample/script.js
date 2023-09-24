@@ -1,15 +1,10 @@
-console.time('start')
-const tempObj = MiniJs.create(
-    {list: [
-        {name: "Hi", label: "label1", value: "value1"}, 
-        {label: "lable2", value: "value2",name: "Hello"}], 
-    key: "Name", flag: false, nested1: {nested2: "Test"}}, {parentSelector: ".container"})
-
-
-
 class MainClass {
+    list = [{name: "Hi", label: "label1", value: "value1"}, {label: "lable2", value: "value2",name: "Hello"}];
+    key = "Name";
+     flag = false; 
+     nested1 = {nested2: "Test"};
     task = {taskid: {10: "Some Value"}};
-    name = "Nad"
+    name = "Nad";
     initEvents() {
         // document.querySelector('#test').addEventListener("keyup", this.fn.bind(this));
     }
@@ -23,4 +18,3 @@ class MainClass {
 let obj = new MainClass();
 obj.initEvents();
 obj = MiniJs.create(obj);
-console.timeEnd("start")

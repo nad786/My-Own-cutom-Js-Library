@@ -22,24 +22,27 @@
         <h1>Add to do list</h1>
         <input md-input="todoItem"><br>
         <button id="todolist">Add List</button><br>
-        <div class="registration">
+        <!-- <div class="registration">
             <ul md-for="todoList">
                 <li md-text>
                 </li>
             </ul>
-        </div>
+        </div> -->
         
         <h1>Add User</h1>
         <label>First Name</label><br>
         <input md-input="user.fname"><br>
         <label>First Name</label><br>
         <input md-input="user.lname"><br>
+        <label>attr val</label><br>
+        <input md-input="user.attrVal"><br>
         <button id="addUser">Add User</button><br>
         <div class="registration">
-          <ul md-for="users">
+          <ul md-for="users" md-let="user">
               <li>
                 <span style="margin-right: 20px" md-text="fname"></span>
                 <span md-text="lname"></span>
+                <label md-attr="md-text=attrVal"></label>
               </li>
           </ul>
       </div>
