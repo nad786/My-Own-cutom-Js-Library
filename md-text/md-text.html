@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example of Loop</title>
+    <script src="../plugin/observable-slim.js"></script>
+    <script src="../js/MiniJs.js"></script>
+    <script src="md-text.js" defer></script>
+    <style>
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-2">
+        <div>
+            <h1 md-text="header1"></h1>
+            <h2 md-text="header2"></h2>
+            <h3 md-text="header3"></h3>
+            <h4 md-text="header4"></h4>
+        </div>
+      <div>
+        <h1>Html code for same</h1>
+        <pre>
+&#60;h1 md-text="header1"/>
+&#60;h2 md-text="header2"/>
+&#60;h3 md-text="header3"/>
+&#60;h4 md-text="header4"/>
+        </pre>
+        <h1>Js code for the same</h1>
+        <pre>
+const instance = MiniJs.create({
+  header1: "Header 1", 
+  header2: "Header 2", 
+  header3: "Header 3", 
+  header4: "Header 4"
+});
+        </pre>
+      </div>
+    </div>
+   
+  </body>
+</html>
+

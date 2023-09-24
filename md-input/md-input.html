@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example of Loop</title>
+    <script src="../plugin/observable-slim.js"></script>
+    <script src="../js/MiniJs.js"></script>
+    <script src="md-input.js" defer></script>
+    <style>
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-2">
+        <div class="registration">
+            <form>
+                <label for="fname">First name:</label><br>
+                <input type="text" md-input="person.fname"><br><div md-text="person.fname"></div>
+                <label for="lname">Last name:</label><br>
+                <input type="text" md-input="person.lname"><br><div md-text="person.lname"></div>
+                <label for="Email">Email</label><br>
+                <input type="text" md-input="person.email"><br><div md-text="person.email"></div>
+                <button id="submit" type="button">Submit</button>
+              </form>
+              <div md-text="outputPayload"></div>
+        </div>
+      <div>
+        <h1>Js code for the same</h1>
+        <pre>
+const instance = MiniJs.create( {
+    person: {fname: "john", lname: 'doe', email: "nad@nad.com" },
+    outputPayload: ""
+})
+document.getElementById("submit").addEventListener("click", (e) => {
+    instance.outputPayload = JSON.stringify(instance.person);
+})
+        </pre>
+      </div>
+    </div>
+   
+  </body>
+</html>
+

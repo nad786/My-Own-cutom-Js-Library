@@ -7,13 +7,13 @@
     <title>Document</title>
     <link rel="stylesheet" />
     <script src="../plugin/observable-slim.js"></script>
-    <script src="../js/MyLibrary.js"></script>
+    <script src="../js/MiniJs.js"></script>
     <script src="script.js" defer></script>
   </head>
   <body>
     <div class="container">
         <ul md-for="list">
-            <li><div md-text="label"></div><span md-text="value"></span>
+            <li><div md-text="label" md-attr="data-id=label"></div><span md-text="value"></span>
                 <li>
         </ul>
         <div md-for="listArr.list">
@@ -27,7 +27,7 @@
     </div>
 
    
-    <input md-input="name" id="test">
+    <input md-input="name" md-attr="data-id=name">
     <div md-text="name"></div>
     <div md-for="persons">
       <div md-for="hobby">

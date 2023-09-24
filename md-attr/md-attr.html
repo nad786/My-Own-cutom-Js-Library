@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example of Loop</title>
+    <script src="../plugin/observable-slim.js"></script>
+    <script src="../js/MiniJs.js"></script>
+    <script src="md-attr.js" defer></script>
+    <style>
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .green {
+        color: green;
+      }
+      .blue {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-2">
+      <div>
+            <h1>Add attribute dynamically</h1>
+            <div md-attr="md-id=dynamicAttr">Elemnt where data-id attr will change</div>
+          <input md-input="attrValue">
+          <button id="btn">Add Attr</button>
+
+          <h1>Toggle class green and blue</h1>
+          <div md-attr="class=className">Elemnt where class value will change</div>
+          <button id="btn1">Toggle Div class</button>
+      </div>
+      <div>
+        <h1>Js code for the same</h1>
+        <pre>
+const instance = MiniJs.create({
+    dynamicAttr: "login",
+    attrValue: "",
+    className: "green"
+})
+document.getElementById('btn').addEventListener("click", (e) => {
+    instance.dynamicAttr = instance.attrValue;
+})
+document.getElementById('btn1').addEventListener("click", (e) => {
+    instance.className = instance.className == 'green' ? "blue" : "green";
+})
+        </pre>
+      </div>
+    </div>
+   
+  </body>
+</html>
