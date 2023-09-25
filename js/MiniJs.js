@@ -61,7 +61,7 @@ class MiniJs {
     flag = false,
   }) {
     if (ele.hasAttribute(`${selector}`)) {
-      const textKey = ele.getAttribute(`${selector}`);
+      let textKey = ele.getAttribute(`${selector}`);
       if (item.type == "add" && flag) {
         let attrVal;
         if (textKey.startsWith("!")) {
@@ -72,10 +72,10 @@ class MiniJs {
         ele.setAttribute(`${selector}`, attrVal);
       }
       if (textKey && typeof item.newValue == "object") {
-        let val = item.newValue[textKey];
-        if (textKey.indexOf(".") >= 0) {
-          val = this.getValueFromkeyWithDot(item.newValue, textKey);
+        if(textKey.startsWith("!")) {
+          textKey = textKey.slice(1);
         }
+        let val = this.getValueFromkeyWithDot(item.newValue, textKey);
         cb(ele, val);
       } else {
         cb(ele, item.newValue);
@@ -99,7 +99,7 @@ class MiniJs {
     data.forEach((item) => {
       if (item.property != "length") {
         const key = this.getMainKeyFromCurrentPath(item.currentPath);
-        if (this.actionMapper.loopCheck[key] || this.actionMapper["md-for"][item.currentPath] == undefined) {
+        if (this.actionMapper.loopCheck[key] || this.actionMapper.loopCheck[item.currentPath] == undefined) {
           this.performLoopOperation(item, key);
         }
         if (
@@ -178,13 +178,27 @@ class MiniJs {
       ele,
       selector: "md-if",
       cb: (ele, val) => {
+        const attr = ele.getAttribute("md-if")
+          if(attr.startsWith("!")) {
+            if(!val) {
+              ele.style.display = "block";
+            } else {
+              ele.style.display = "none";
+            }
+          } else {
+            if(val) {
+              ele.style.display = "block";
+            } else {
+              ele.style.display = "none";
+            }
+          }
         if (
           (val && !ele.getAttribute("md-if").startsWith("!")) ||
           (!val && ele.getAttribute("md-if").startsWith("!"))
         ) {
-          ele.style.display = "block";
+          
         } else {
-          ele.style.display = "none";
+          
         }
       },
     });
