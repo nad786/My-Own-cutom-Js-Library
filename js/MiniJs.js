@@ -99,30 +99,30 @@ class MiniJs {
     data.forEach((item) => {
       if (item.property != "length") {
         const key = this.getMainKeyFromCurrentPath(item.currentPath);
-        if (this.actionMapper.loopCheck[key]) {
+        if (this.actionMapper.loopCheck[key] || this.actionMapper["md-for"][item.currentPath] == undefined) {
           this.performLoopOperation(item, key);
         }
         if (
           this.actionMapper["md-text"][item.currentPath] ||
-          this.actionMapper["md-text"][key]
+          this.actionMapper["md-text"][key] || this.actionMapper["md-text"][item.currentPath] == undefined
         ) {
           this.performTextOperation(item, key);
         }
         if (
           this.actionMapper["md-text"][item.currentPath] ||
-          this.actionMapper["md-text"][key]
+          this.actionMapper["md-text"][key] || this.actionMapper["md-text"][item.currentPath] == undefined
         ) {
           this.performInputOperation(item, key);
         }
         if (
           this.actionMapper["md-if"][item.currentPath] ||
-          this.actionMapper["md-if"][key]
+          this.actionMapper["md-if"][key] || this.actionMapper["md-if"][item.currentPath] == undefined
         ) {
           this.performIfStatementOperation(item, key);
         }
         if (
           this.actionMapper.attrCheck[item.currentPath] ||
-          this.actionMapper.attrCheck[key]
+          this.actionMapper.attrCheck[key] || this.actionMapper.attrCheck[item.currentPath] == undefined
         ) {
           this.performAttributeAddOpeartaion(item, key);
         }
