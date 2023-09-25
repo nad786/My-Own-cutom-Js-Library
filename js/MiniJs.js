@@ -249,7 +249,6 @@ class MiniJs {
     attrArr.forEach((item) => {
       obj = obj?.[item];
     });
-    console.log("Hello");
       obj[targetKey] = e.target.value;
       this.inputFlag = false;
       setTimeout(() => {
