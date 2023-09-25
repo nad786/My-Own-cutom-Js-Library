@@ -22,12 +22,12 @@
         <h1>Add to do list</h1>
         <input md-input="todoItem"><br>
         <button id="todolist">Add List</button><br>
-        <!-- <div class="registration">
-            <ul md-for="todoList">
-                <li md-text>
+        <div class="registration">
+            <ul md-for="todoList" md-let="item">
+                <li md-text="item">
                 </li>
             </ul>
-        </div> -->
+        </div>
         
         <h1>Add User</h1>
         <label>First Name</label><br>
@@ -40,9 +40,9 @@
         <div class="registration">
           <ul md-for="users" md-let="user">
               <li>
-                <span style="margin-right: 20px" md-text="fname"></span>
-                <span md-text="lname"></span>
-                <label md-attr="md-text=attrVal"></label>
+                <span style="margin-right: 20px" md-text="user.fname"></span>
+                <span md-text="user.lname"></span>
+                <label md-attr="md-text=user.attrVal"></label>
               </li>
           </ul>
       </div>

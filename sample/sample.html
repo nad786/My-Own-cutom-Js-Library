@@ -12,22 +12,31 @@
   </head>
   <body>
     <div class="container">
-        <ul md-for="list">
-            <li><div md-text="label" md-attr="data-id=label"></div><span md-text="value"></span>
-                <li>
+        <ul md-for="list" md-let="item">
+            <li>
+              <div md-text="item.name" md-if="show" md-attr="data-id=item.label" md-class="active=item.label" md-text="name">!Hide</div>
+              <div md-text="item.label" md-if="!show" md-attr="data-id=item.label" md-class="active=item.label">Hide</div>
+  
+              <!-- <span md-text="item.value"></span>
+              <span md-if="item.show" md-attr="data-id=label">Show/Hide</span>
+              <span md-if="!show">!Show/Hide</span> -->
+            </li>
+            <!-- <div md-if="list.length">Hello</div> -->
         </ul>
-        <div md-for="listArr.list">
-                <label md-text="keyName"></label>
-        </div>
-        <h3 md-text="key"></h3>
+        <!-- <div md-class='{"active":"active"}' class="conatiner">Active</div>
+        <div md-class="not-active=!active;show=!show" class="container">Not Active</div> -->
+        <!-- <div md-for="listArr.list">
+                <label md-text></label>
+        </div> -->
+        <!-- <h3 md-text="key"></h3>
         <h3 md-text="nested1.nested2">Hide/ show Element</h3> 
         <h3 md-text="nested1.nested2">Hide/ show Element with not</h3> 
             <input md-input="nested1.nested2" md-attr="data-id = nested1.nested2">
-            <h3 md-text="nested1.nested2"></h3>
+            <h3 md-text="nested1.nested2"></h3> -->
     </div>
 
    
-    <input md-input="name" md-attr="data-id=name">
+    <!-- <input md-input="name" md-attr="data-id=name">
     <div md-text="name"></div>
     <div md-for="persons">
       <div md-for="hobby">
@@ -37,7 +46,7 @@
         </div>
       </div>
     </div>
-    <div md-text="task.taskid.10"></div>
+    <div md-text="task.taskid.10"></div> -->
 
   </body>
 </html>

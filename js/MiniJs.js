@@ -2,55 +2,28 @@ class MiniJs {
   elements = [];
   listElements = {};
   listContainer = {};
-  targetMap = {
-    "md-loop": "performLoopOperation",
-    "md-if": "performIfStatementOperation",
-    "md-text": "performTextOperation",
-    "md-input": "performInputOperation",
-    "md-attr": "performAttributeAddOpeartaion",
-  };
   container = document;
-  opertaionMapper = "performOperation";
-  targetOperation = "performOperation";
-  actionMapper = {
-    loopCheck: {},
-    "md-if": {},
-    "md-text": {},
-    "md-input": {},
-    attrCheck: {},
-  };
+
   //don't execute when changed from keyup event
   inputFlag = true;
   constructor(obj, rest = {}) {
     const { parentSelector = "html", target = null } = rest;
-    if (target && this.targetMap[target]) {
-      this.opertaionMapper = this.targetMap[target]
-        ? this.targetMap[target]
-        : "performOperation";
-      this.targetOperation = "opertaionMapperExecution";
-    }
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.init(obj);
   }
 
   detectChanges(data) {
-    this[this.targetOperation](data);
+    this.performOperation(data);
   }
-
 
   //common Operation
   init(obj) {
-    this.mappedActionForPerformance(obj);
+    // this.mappedActionForPerformance(obj);
     const data = this.generateDefaultObjectType(obj);
     this.initForLoop(obj);
-    this[this.targetOperation](data);
-    if (
-      this.targetOperation == "performOperation" ||
-      this.targetOperation == "performInputOperation"
-    ) {
-      this.initInputChanges(data);
-    }
+    this.performOperation(data);
+    this.initInputChanges(data);
   }
 
   performAllOperationForAllItsChildNodes({
@@ -62,17 +35,8 @@ class MiniJs {
   }) {
     if (ele.hasAttribute(`${selector}`)) {
       let textKey = ele.getAttribute(`${selector}`);
-      if (item.type == "add" && flag) {
-        let attrVal;
-        if (textKey.startsWith("!")) {
-          attrVal = `!${item.currentPath}.${textKey.slice(1)}`;
-        } else {
-          attrVal = item.currentPath + (textKey ? "." + textKey : "");
-        }
-        ele.setAttribute(`${selector}`, attrVal);
-      }
       if (textKey && typeof item.newValue == "object") {
-        if(textKey.startsWith("!")) {
+        if (textKey.startsWith("!")) {
           textKey = textKey.slice(1);
         }
         let val = this.getValueFromkeyWithDot(item.newValue, textKey);
@@ -97,86 +61,67 @@ class MiniJs {
   //perform all all operation based on action mapper
   performOperation(data) {
     data.forEach((item) => {
-      if (item.property != "length") {
-        const key = this.getMainKeyFromCurrentPath(item.currentPath);
-        if (this.actionMapper.loopCheck[key] || this.actionMapper.loopCheck[item.currentPath] == undefined) {
-          this.performLoopOperation(item, key);
-        }
-        if (
-          this.actionMapper["md-text"][item.currentPath] ||
-          this.actionMapper["md-text"][key] || this.actionMapper["md-text"][item.currentPath] == undefined
-        ) {
-          this.performTextOperation(item, key);
-        }
-        if (
-          this.actionMapper["md-text"][item.currentPath] ||
-          this.actionMapper["md-text"][key] || this.actionMapper["md-text"][item.currentPath] == undefined
-        ) {
-          this.performInputOperation(item, key);
-        }
-        if (
-          this.actionMapper["md-if"][item.currentPath] ||
-          this.actionMapper["md-if"][key] || this.actionMapper["md-if"][item.currentPath] == undefined
-        ) {
-          this.performIfStatementOperation(item, key);
-        }
-        if (
-          this.actionMapper.attrCheck[item.currentPath] ||
-          this.actionMapper.attrCheck[key] || this.actionMapper.attrCheck[item.currentPath] == undefined
-        ) {
-          this.performAttributeAddOpeartaion(item, key);
-        }
-        this.performClassOpeartion(item, key);
-      }
+      const key = this.getMainKeyFromCurrentPath(item.currentPath);
+      this.performLoopOperation(item, key);
+      this.performTextOperation(item, key);
+      this.performInputOperation(item, key);
+      this.performIfStatementOperation(item, key);
+      this.performAttributeAddOpeartaion(item, key);
+      this.performClassOpeartion(item, key);
     });
   }
 
   //class operation
   performClassOpeartion(item) {
-    const elements = this.container.querySelectorAll(`[md-class*="${item.currentPath}"]`);
-    if(elements.length) {
-      elements.forEach(element => {
+    const elements = this.container.querySelectorAll(
+      `[md-class*="${item.currentPath}"]`
+    );
+    if (elements.length) {
+      elements.forEach((element) => {
         this.updateClassFromBindProperty(item, element);
-      })
+      });
     }
   }
 
   updateClassFromBindProperty(item, ele) {
-    const attr = ele.getAttribute('md-class');
-    if(!attr.startsWith('{')) {
+    const attr = ele.getAttribute("md-class");
+    if (!attr.startsWith("{")) {
       attr.split(";").forEach((temp) => {
         temp = temp.split("=").map((temp) => temp.trim());
-        this.addOrRemoveClassFromElement(item.target, temp[1], temp[0], ele);
-        
+        this.addOrRemoveClassFromElement(this.lib, temp[1], temp[0], ele);
       });
     } else {
       const obj = JSON.parse(attr);
-      for(let className in obj) {
-        this.addOrRemoveClassFromElement(item.target, obj[className], className, ele);
+      for (let className in obj) {
+        this.addOrRemoveClassFromElement(
+          this.lib,
+          obj[className],
+          className,
+          ele
+        );
       }
     }
   }
   addOrRemoveClassFromElement(item, key, className, ele) {
     let flag = false;
-    if(key.startsWith("!")) {
+    if (key.startsWith("!")) {
       flag = true;
       key = key.slice(1);
     }
     const val = this.getValueFromkeyWithDot(item, key);
-    if(flag) {
-      if(!val){
+    if (flag) {
+      if (!val) {
         ele.classList.add(className);
       } else {
         ele.classList.remove(className);
       }
     } else {
-      if(val){
+      if (val) {
         ele.classList.add(className);
       } else {
         ele.classList.remove(className);
       }
     }
-    
   }
 
   //attr opeartion
@@ -199,17 +144,14 @@ class MiniJs {
         key ? item.newValue : this.lib,
         key ? key : attr[1]
       );
-      if(val) {
-        if(this.actionMapper[attr[0]]) {
-          this.actionMapper[attr[0]][val] = true;
-        }
+      if (val) {
         element.setAttribute(attr[0], val);
       }
     });
   }
 
   //if opeartion
-  performIfStatementOperation(item, key) {
+  performIfStatementOperation(item) {
     [`${item.currentPath}`, `!${item.currentPath}`].forEach((selector) => {
       const elements = this.container.querySelectorAll(`[md-if="${selector}"]`);
       if (elements.length) {
@@ -227,27 +169,25 @@ class MiniJs {
       ele,
       selector: "md-if",
       cb: (ele, val) => {
-        const attr = ele.getAttribute("md-if")
-          if(attr.startsWith("!")) {
-            if(!val) {
-              ele.style.display = "block";
-            } else {
-              ele.style.display = "none";
-            }
+        const attr = ele.getAttribute("md-if");
+        if (attr.startsWith("!")) {
+          if (!val) {
+            ele.style.display = "block";
           } else {
-            if(val) {
-              ele.style.display = "block";
-            } else {
-              ele.style.display = "none";
-            }
+            ele.style.display = "none";
           }
+        } else {
+          if (val) {
+            ele.style.display = "block";
+          } else {
+            ele.style.display = "none";
+          }
+        }
         if (
           (val && !ele.getAttribute("md-if").startsWith("!")) ||
           (!val && ele.getAttribute("md-if").startsWith("!"))
         ) {
-          
         } else {
-          
         }
       },
     });
@@ -290,7 +230,7 @@ class MiniJs {
   }
 
   modifyMdInputValue(item, ele, flag = false) {
-    if(this.inputFlag) {
+    if (this.inputFlag) {
       this.performAllOperationForAllItsChildNodes({
         flag,
         item,
@@ -298,7 +238,7 @@ class MiniJs {
         selector: "md-input",
         cb: (ele, val) => {
           ele.value = val;
-          var event = new Event('keyup');
+          var event = new Event("keyup");
           ele.dispatchEvent(event);
         },
       });
@@ -312,11 +252,11 @@ class MiniJs {
     attrArr.forEach((item) => {
       obj = obj?.[item];
     });
-      obj[targetKey] = e.target.value;
-      this.inputFlag = false;
-      setTimeout(() => {
-        this.inputFlag = true;
-      }, 100)
+    obj[targetKey] = e.target.value;
+    this.inputFlag = false;
+    setTimeout(() => {
+      this.inputFlag = true;
+    }, 100);
   }
 
   initInputChanges(data) {
@@ -341,7 +281,7 @@ class MiniJs {
     const elements = this.container.querySelectorAll(`[md-input="${key}"]`);
     if (elements.length) {
       elements.forEach((element) => {
-        if(element.tagName =='INPUT') {
+        if (element.tagName == "INPUT") {
           element.removeEventListener(
             "keyup",
             this.performInputKeyUpEvent.bind(this)
@@ -350,7 +290,7 @@ class MiniJs {
             "keyup",
             this.performInputKeyUpEvent.bind(this)
           );
-        } else if(element.tagName =='SELECT') {
+        } else if (element.tagName == "SELECT") {
           element.removeEventListener(
             "change",
             this.performInputKeyUpEvent.bind(this)
@@ -360,34 +300,33 @@ class MiniJs {
             this.performInputKeyUpEvent.bind(this)
           );
         }
-       
       });
     }
   }
 
   //utility function
   //mapped action to work with only thos operation with value changes
-  mappedActionForPerformance(obj) {
-    const mappedKeys = this.generateKeyWithDotSeperated(obj);
-    mappedKeys.forEach((item) => {
-      const key = this.getMainKeyFromCurrentPath(item);
-      if (this.container.querySelector(`[md-for^="${key}"]`)) {
-        this.actionMapper.loopCheck[key] = true;
-      }
-      if (this.container.querySelector(`[md-if*="${key}"]`)) {
-        this.actionMapper["md-if"][key] = true;
-      }
-      if (this.container.querySelector(`[md-text^="${item}"]`)) {
-        this.actionMapper["md-text"][item] = true;
-      }
-      if (this.container.querySelector(`[md-input^="${item}"]`)) {
-        this.actionMapper["md-text"][item] = true;
-      }
-      if (this.container.querySelector(`[md-attr*="${key}"]`)) {
-        this.actionMapper.attrCheck[key] = true;
-      }
-    });
-  }
+  // mappedActionForPerformance(obj) {
+  //   const mappedKeys = this.generateKeyWithDotSeperated(obj);
+  //   mappedKeys.forEach((item) => {
+  //     const key = this.getMainKeyFromCurrentPath(item);
+  //     if (this.container.querySelector(`[md-for^="${key}"]`)) {
+  //       this.actionMapper.loopCheck[key] = true;
+  //     }
+  //     if (this.container.querySelector(`[md-if*="${key}"]`)) {
+  //       this.actionMapper["md-if"][key] = true;
+  //     }
+  //     if (this.container.querySelector(`[md-text^="${item}"]`)) {
+  //       this.actionMapper["md-text"][item] = true;
+  //     }
+  //     if (this.container.querySelector(`[md-input^="${item}"]`)) {
+  //       this.actionMapper["md-text"][item] = true;
+  //     }
+  //     if (this.container.querySelector(`[md-attr*="${key}"]`)) {
+  //       this.actionMapper.attrCheck[key] = true;
+  //     }
+  //   });
+  // }
 
   //get first key of curretn path
   getMainKeyFromCurrentPath(currentPath) {
@@ -396,16 +335,6 @@ class MiniJs {
       key = currentPath.slice(0, currentPath.indexOf("."));
     }
     return key;
-  }
-
-  //only execute target operation like, md-if, md-loop
-  opertaionMapperExecution(data) {
-    data.forEach((item) => {
-      if (item.property != "length") {
-        const key = this.getMainKeyFromCurrentPath(item.currentPath);
-        this[this.opertaionMapper](item, key);
-      }
-    });
   }
 
   getValueFromkeyWithDot(obj, key) {
@@ -498,15 +427,14 @@ class MiniJs {
           const targetKey = (key + item).split(".")[0];
           if (!this.listContainer[targetKey]) {
             this.listContainer[targetKey] = [];
-          }
-          if (!this.listElements[targetKey]) {
             this.listElements[targetKey] = [];
           }
           this.listContainer[targetKey].push(element);
           this.listElements[targetKey].push(
             element.firstElementChild.cloneNode(true)
           );
-          this.removeAllchildNodes(element);
+          // this.removeAllchildNodes(element);
+          element.removeChild(element.firstElementChild);
         });
       } else if (typeof obj[item] == "object") {
         this.initForLoop(obj[item], key + item);
@@ -538,26 +466,109 @@ class MiniJs {
       if (temp || tempInput || ifEle || ifNotEle || attrEle) {
         this.updatePropertyInLoop({ item, key });
       } else {
+        const varName = element.getAttribute("md-let");
         const ele = this.listElements[key][index].cloneNode(true);
-        if (ele.hasAttribute("md-for") || ele.querySelector("[md-for]")) {
-          this.addNestedLoopOp(item, ele, item.currentPath);
-        }
-        this.modifyMdTextValue(item, ele, true);
-        this.modifyMdInputValue(item, ele, true);
-        this.hideShowELement(item, ele, true);
-        this.addAttraibuteInsideLoop(item, ele);
+        this.updateAllPropertyToChildrenInLoop(item, ele, varName);
         element.appendChild(ele);
       }
     });
   }
 
-  addNestedLoopOp(item, ele, key) {
-    if (ele.hasAttribute("md-for")) {
+  updateAllPropertyToChildrenInLoop(item, ele, varName) {
+    // if (ele.hasAttribute("md-for") || ele.querySelector("[md-for]")) {
+    //   this.addNestedLoopOp(item, ele, item.currentPath, varName);
+    // }
+
+    const allNestedKeys = this.generateKeyWithDotSeperated(item.newValue);
+    this.addAllAttributeToChildren("md-text", item, ele, varName);
+    this.addAllAttributeToChildren("md-if", item, ele, varName);
+    this.addAllAttributeToChildren("md-input", item, ele, varName);
+    this.addAttrClassToChildred("md-attr", item, ele, varName, allNestedKeys);
+    this.addAttrClassToChildred("md-class", item, ele, varName, allNestedKeys);
+    const mainObj = { ...this.lib };
+    allNestedKeys.forEach((currentKey) => {
+      const obj = {
+        ...item,
+        newValue: mainObj,
+        currentPath: item.currentPath + "." + currentKey,
+      };
+      this.modifyMdInputValue(obj, ele, true);
+      this.modifyMdTextValue(obj, ele, true);
+      this.hideShowELement(obj, ele, true);
+    });
+
+    // this.performIfStatementOperation
+  }
+
+  addAttrClassToChildred(selector, item, ele, varName, keys) {
+    const attr = ele.getAttribute(selector);
+    if (attr) {
+      if (attr.includes(varName)) {
+        keys.forEach((key) => {
+          attr.split(";").map((temp) => {
+            temp = temp.split("=").map((temp) => temp.trim());
+            if (temp[1] == key) {
+              flag = true;
+              path = item.currentPath + "." + key;
+              temp[1] = path;
+            }
+            return temp;
+          });
+          ele.setAttribute(selector, attr.replace(varName, item.currentPath));
+        });
+      }
+    }
+    const elements = ele.querySelectorAll(`[${selector}]`);
+    elements.forEach((element) => {
+      this.addAttrClassToChildred(selector, item, element, varName, keys);
+    });
+  }
+
+  addAllAttributeToChildren(selector, item, ele, varName) {
+    const attr = ele.getAttribute(selector);
+    if (attr) {
+      if (attr.startsWith(varName)) {
+        ele.setAttribute(selector, attr.replace(varName, item.currentPath));
+      }
+    }
+    const elements = ele.querySelectorAll(`[${selector}]`);
+    elements.forEach((element) => {
+      this.addAllAttributeToChildren(selector, item, element, varName);
+    });
+  }
+
+  //attr for attr and class
+  addAttrInLoop(item, element, key, selector, cb) {
+    let attrVal = element.getAttribute(selector);
+    if (attrVal?.includes(key)) {
+      let flag = false;
+      let path = "";
+      const list = attrVal.split(";").map((temp) => {
+        temp = temp.split("=").map((temp) => temp.trim());
+        if (temp[1] == key) {
+          flag = true;
+          path = item.currentPath + "." + key;
+          temp[1] = path;
+        }
+        return temp;
+      });
+      if (flag) {
+        cb(item, list, element, key);
+      }
+    }
+  }
+
+  addNestedLoopOp(item, ele, key, varName) {
+    const attr = ele.getAttribute("md-for");
+    if (attr) {
+      if (attr.startsWith(varName + ".")) {
+        ele.setAttribute("md-for", attr.replace(varName, item.currentPath));
+      }
       const values = this.getValueFromkeyWithDot(this.lib, key);
       const defaultNestedValues = this.generateDefaultObjectType(values);
       const node = ele.firstElementChild.cloneNode(true);
       ele.removeChild(ele.firstElementChild);
-      defaultNestedValues.forEach((element, index) => {
+      defaultNestedValues.forEach((element) => {
         const clon = node.cloneNode(true);
         this.addNestedLoopAttribute(clon, "md-text", element.currentPath);
         this.addNestedLoopAttribute(clon, "md-input", element.currentPath);
@@ -625,53 +636,6 @@ class MiniJs {
     this.listContainer[key].forEach((ele) => {
       const nodes = ele.children;
       ele.removeChild(nodes[item.property]);
-    });
-  }
-
-  addAttraibuteInsideLoop(item, ele) {
-    const attrEle = ele.querySelectorAll("[md-attr]");
-    if (!attrEle.length) {
-      return;
-    }
-    const generatePath = this.generateKeyWithDotSeperated(item.newValue);
-    generatePath.forEach((key) => {
-      attrEle.forEach((element) => {
-        let attrVal = element.getAttribute("md-attr");
-        if (attrVal.includes(key)) {
-          let flag = false;
-          let path = "";
-          const list = attrVal.split(";").map((temp) => {
-            temp = temp.split("=").map((temp) => temp.trim());
-            if (temp[1] == key) {
-              flag = true;
-              path = item.currentPath + "." + key;
-              temp[1] = path;
-            }
-            return temp;
-          });
-          if (flag) {
-            this.actionMapper.attrCheck[path] = true;
-            element.setAttribute(
-              "md-attr",
-              list.map((item) => item.join("=")).join(";")
-            );
-            this.updateAttributeValueForAttr(item, element, key);
-            // this.
-            const mainObj = {...this.lib}
-            for(let key in this.lib) {
-              if(this.actionMapper["md-if"][key]) {
-                this.modifyMdInputValue({item, newValue: mainObj}, element, true);
-              }
-              if(this.actionMapper["md-input"][key]) {
-                this.modifyMdInputValue({item, newValue: mainObj}, element, true);
-              }
-              if(this.actionMapper["md-text"][key]) {
-                this.modifyMdTextValue({item, newValue: mainObj}, element, true);
-              }
-            }
-          }
-        }
-      });
     });
   }
 
