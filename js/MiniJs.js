@@ -126,8 +126,57 @@ class MiniJs {
         ) {
           this.performAttributeAddOpeartaion(item, key);
         }
+        this.performClassOpeartion(item, key);
       }
     });
+  }
+
+  //class operation
+  performClassOpeartion(item) {
+    const elements = this.container.querySelectorAll(`[md-class*="${item.currentPath}"]`);
+    if(elements.length) {
+      elements.forEach(element => {
+        this.updateClassFromBindProperty(item, element);
+      })
+    }
+  }
+
+  updateClassFromBindProperty(item, ele) {
+    const attr = ele.getAttribute('md-class');
+    if(!attr.startsWith('{')) {
+      attr.split(";").forEach((temp) => {
+        temp = temp.split("=").map((temp) => temp.trim());
+        this.addOrRemoveClassFromElement(item.target, temp[1], temp[0], ele);
+        
+      });
+    } else {
+      const obj = JSON.parse(attr);
+      for(let className in obj) {
+        this.addOrRemoveClassFromElement(item.target, obj[className], className, ele);
+      }
+    }
+  }
+  addOrRemoveClassFromElement(item, key, className, ele) {
+    let flag = false;
+    if(key.startsWith("!")) {
+      flag = true;
+      key = key.slice(1);
+    }
+    const val = this.getValueFromkeyWithDot(item, key);
+    if(flag) {
+      if(!val){
+        ele.classList.add(className);
+      } else {
+        ele.classList.remove(className);
+      }
+    } else {
+      if(val){
+        ele.classList.add(className);
+      } else {
+        ele.classList.remove(className);
+      }
+    }
+    
   }
 
   //attr opeartion
@@ -292,14 +341,26 @@ class MiniJs {
     const elements = this.container.querySelectorAll(`[md-input="${key}"]`);
     if (elements.length) {
       elements.forEach((element) => {
-        element.removeEventListener(
-          "keyup",
-          this.performInputKeyUpEvent.bind(this)
-        );
-        element.addEventListener(
-          "keyup",
-          this.performInputKeyUpEvent.bind(this)
-        );
+        if(element.tagName =='INPUT') {
+          element.removeEventListener(
+            "keyup",
+            this.performInputKeyUpEvent.bind(this)
+          );
+          element.addEventListener(
+            "keyup",
+            this.performInputKeyUpEvent.bind(this)
+          );
+        } else if(element.tagName =='SELECT') {
+          element.removeEventListener(
+            "change",
+            this.performInputKeyUpEvent.bind(this)
+          );
+          element.addEventListener(
+            "change",
+            this.performInputKeyUpEvent.bind(this)
+          );
+        }
+       
       });
     }
   }
@@ -408,6 +469,7 @@ class MiniJs {
     }
     return keys;
   }
+
   removeAllchildNodes(element) {
     while (element.firstChild) {
       element.removeChild(element.firstChild);
