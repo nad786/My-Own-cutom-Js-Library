@@ -147,7 +147,7 @@ class MiniJs {
     multiAttr.forEach((singleAttr) => {
       const attr = singleAttr.split("=").map((item) => item.trim());
       const val = this.getValueFromkeyWithDot(
-        item.newValue,
+        key ? item.newValue : this.lib,
         key ? key : attr[1]
       );
       if(val) {
