@@ -14,7 +14,7 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    if(data.length == 1 && Array.isArray(data[0].newValue)) {
+    if(data.length == 1 && data[0].newValue.length &&  Array.isArray(data[0].newValue)) {
      data = this.generateDefaultObjectType(data[0].target);
      this.performOperation(data);
     } else 
