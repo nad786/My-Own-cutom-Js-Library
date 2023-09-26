@@ -14,14 +14,19 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    if(data.length == 1 && data[0].newValue.length &&  Array.isArray(data[0].newValue)) {
-      const key = data[0].currentPath.includes(".") ? this.getMainKeyFromCurrentPath(data[0].currentPath) : '';
-     const temp = this.generateDefaultObjectType(data[0].target, key);
-     this.performOperation([data[0], ...temp]);
-    } else {  
+    if (
+      data.length == 1 &&
+      Array.isArray(data[0].newValue)
+    ) {
+      const key = data[0].currentPath.includes(".")
+        ? this.getMainKeyFromCurrentPath(data[0].currentPath)
+        : "";
+      const temp = this.generateDefaultObjectType(data[0].target, key);
+      this.performOperation([data[0], ...temp]);
+    } else {
       this.performOperation(data);
     }
- }
+  }
 
   //common Operation
   init(obj) {
@@ -67,16 +72,15 @@ class MiniJs {
   //perform all all operation based on action mapper
   performOperation(data) {
     data.forEach((item) => {
-      if(!item.currentPath.endsWith('.length')) {
-        const key = this.getMainKeyFromCurrentPath(item.currentPath);
+      const key = this.getMainKeyFromCurrentPath(item.currentPath);
+      if (!item.currentPath.endsWith(".length")) {
         this.performLoopOperation(item, key);
         this.performTextOperation(item, key);
         this.performInputOperation(item, key);
-        this.performIfStatementOperation(item, key);
         this.performAttributeAddOpeartaion(item, key);
         this.performClassOpeartion(item, key);
       }
-        
+      this.performIfStatementOperation(item, key);
     });
   }
 
@@ -179,24 +183,11 @@ class MiniJs {
       selector: "md-if",
       cb: (ele, val) => {
         const attr = ele.getAttribute("md-if");
-        if (attr.startsWith("!")) {
-          if (!val) {
-            ele.style.display = "block";
-          } else {
-            ele.style.display = "none";
-          }
+        const display = ele.getAttribute("md-display") ?? "block";
+        if ((val && attr[0] != "!") || (!val && attr[0] == "!")) {
+          ele.style.display = display;
         } else {
-          if (val) {
-            ele.style.display = "block";
-          } else {
-            ele.style.display = "none";
-          }
-        }
-        if (
-          (val && !ele.getAttribute("md-if").startsWith("!")) ||
-          (!val && ele.getAttribute("md-if").startsWith("!"))
-        ) {
-        } else {
+          ele.style.display = "none";
         }
       },
     });
@@ -358,7 +349,7 @@ class MiniJs {
   generateDefaultObjectType(data, nestedKey = "") {
     if (nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
-        return data.map((item, index) => {
+      const temp =  data.map((item, index) => {
         return {
           type: "add",
           target: data,
@@ -366,6 +357,13 @@ class MiniJs {
           newValue: item,
         };
       });
+      temp.push({
+        type: "add",
+        target: data,
+        currentPath: `${nestedKey}length`,
+        newValue: data.length,
+      })
+      return temp;
     } else {
       let tempArr = [];
       for (let item in data) {
@@ -513,18 +511,19 @@ class MiniJs {
     const attr = ele.getAttribute(selector);
     if (attr) {
       if (attr.includes(varName)) {
-        keys.forEach((key) => {
-          attr.split(";").map((temp) => {
+   
+          const arr = attr.split(";").map((temp) => {
             temp = temp.split("=").map((temp) => temp.trim());
-            if (temp[1] == key) {
-              flag = true;
-              path = item.currentPath + "." + key;
-              temp[1] = path;
+            if (temp[1].startsWith(varName + ".")) {
+              temp[1] = temp[1].replace(varName, item.currentPath);
             }
             return temp;
           });
-          ele.setAttribute(selector, attr.replace(varName, item.currentPath));
-        });
+          ele.setAttribute(
+            selector,
+            arr.map((item) => item.join("=")).join(";")
+          );
+    
       }
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
@@ -607,7 +606,7 @@ class MiniJs {
     this.listContainer[key].forEach((element, index) => {
       if (Array.isArray(item.newValue)) {
         this.removeAllchildNodes(element);
-        item.newValue.forEach((tempArr, index) => { 
+        item.newValue.forEach((tempArr, index) => {
           this.addPropertyInLoop({
             item: {
               ...item,
