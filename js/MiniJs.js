@@ -14,10 +14,7 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    if (
-      data.length == 1 &&
-      Array.isArray(data[0].newValue)
-    ) {
+    if (data.length == 1 && Array.isArray(data[0].newValue)) {
       const key = data[0].currentPath.includes(".")
         ? this.getMainKeyFromCurrentPath(data[0].currentPath)
         : "";
@@ -44,28 +41,33 @@ class MiniJs {
     cb,
     flag = false,
   }) {
-    if (ele.hasAttribute(`${selector}`)) {
-      let textKey = ele.getAttribute(`${selector}`);
-      if (textKey && typeof item.newValue == "object") {
-        if (textKey.startsWith("!")) {
-          textKey = textKey.slice(1);
-        }
-        let val = this.getValueFromkeyWithDot(item.newValue, textKey);
-        cb(ele, val);
-      } else {
-        cb(ele, item.newValue);
+    let textKey = ele.getAttribute(`${selector}`);
+    if (textKey) {
+      if (textKey.startsWith("!")) {
+        textKey = textKey.slice(1);
       }
+      let val = this.getValueFromkeyWithDot(item.newValue, textKey);
+      cb(ele, val);
+      // if (textKey && typeof item.newValue == "object") {
+      //   if (textKey.startsWith("!")) {
+      //     textKey = textKey.slice(1);
+      //   }
+      //   let val = this.getValueFromkeyWithDot(item.newValue, textKey);
+      //   cb(ele, val);
+      // } else {
+      //   cb(ele, item.newValue);
+      // }
     } else {
-      const nodes = ele.children;
-      for (let i = 0; i < nodes.length; i++) {
+      const nodes = ele.querySelectorAll(`[${selector}]`);
+      nodes.forEach((node) => {
         this.performAllOperationForAllItsChildNodes({
           item,
-          ele: nodes.item(i),
+          ele: node,
           selector,
           cb,
           flag,
         });
-      }
+      });
     }
   }
 
@@ -260,21 +262,23 @@ class MiniJs {
   }
 
   initInputChanges(data) {
-    data.forEach((item) => {
-      if (item.property != "length") {
-        if (typeof item.newValue == "object") {
-          const mainKey = item.currentPath;
-          const objKeys = this.generateKeyWithDotSeperated(item.newValue);
-          objKeys.forEach((key) => {
-            const keyForEvent = `${mainKey}.${key}`;
-            this.attachedKeyUpEvent(keyForEvent);
-          });
-        } else {
-          const key = item.currentPath;
-          this.attachedKeyUpEvent(key);
+    if (this.container.querySelector("md-input")) {
+      data.forEach((item) => {
+        if (item.property != "length") {
+          if (typeof item.newValue == "object") {
+            const mainKey = item.currentPath;
+            const objKeys = this.generateKeyWithDotSeperated(item.newValue);
+            objKeys.forEach((key) => {
+              const keyForEvent = `${mainKey}.${key}`;
+              this.attachedKeyUpEvent(keyForEvent);
+            });
+          } else {
+            const key = item.currentPath;
+            this.attachedKeyUpEvent(key);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   attachedKeyUpEvent(key) {
@@ -349,7 +353,7 @@ class MiniJs {
   generateDefaultObjectType(data, nestedKey = "") {
     if (nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
-      const temp =  data.map((item, index) => {
+      const temp = data.map((item, index) => {
         return {
           type: "add",
           target: data,
@@ -362,7 +366,7 @@ class MiniJs {
         target: data,
         currentPath: `${nestedKey}length`,
         newValue: data.length,
-      })
+      });
       return temp;
     } else {
       let tempArr = [];
@@ -511,19 +515,14 @@ class MiniJs {
     const attr = ele.getAttribute(selector);
     if (attr) {
       if (attr.includes(varName)) {
-   
-          const arr = attr.split(";").map((temp) => {
-            temp = temp.split("=").map((temp) => temp.trim());
-            if (temp[1].startsWith(varName + ".")) {
-              temp[1] = temp[1].replace(varName, item.currentPath);
-            }
-            return temp;
-          });
-          ele.setAttribute(
-            selector,
-            arr.map((item) => item.join("=")).join(";")
-          );
-    
+        const arr = attr.split(";").map((temp) => {
+          temp = temp.split("=").map((temp) => temp.trim());
+          if (temp[1].startsWith(varName + ".")) {
+            temp[1] = temp[1].replace(varName, item.currentPath);
+          }
+          return temp;
+        });
+        ele.setAttribute(selector, arr.map((item) => item.join("=")).join(";"));
       }
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
