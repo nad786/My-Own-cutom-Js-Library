@@ -15,10 +15,12 @@ class MiniJs {
 
   detectChanges(data) {
     if(data.length == 1 && data[0].newValue.length &&  Array.isArray(data[0].newValue)) {
-     data = this.generateDefaultObjectType(data[0].target);
-     this.performOperation(data);
-    } else 
-    this.performOperation(data);
+      const key = data[0].currentPath.includes(".") ? this.getMainKeyFromCurrentPath(data[0].currentPath) : '';
+     const temp = this.generateDefaultObjectType(data[0].target, key);
+     this.performOperation([data[0], ...temp]);
+    } else {  
+      this.performOperation(data);
+    }
  }
 
   //common Operation
@@ -605,7 +607,7 @@ class MiniJs {
     this.listContainer[key].forEach((element, index) => {
       if (Array.isArray(item.newValue)) {
         this.removeAllchildNodes(element);
-        item.newValue.forEach((tempArr, index) => {
+        item.newValue.forEach((tempArr, index) => { 
           this.addPropertyInLoop({
             item: {
               ...item,
