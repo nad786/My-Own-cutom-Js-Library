@@ -14,8 +14,12 @@ class MiniJs {
   }
 
   detectChanges(data) {
+    if(data.length == 1 && Array.isArray(data[0].newValue)) {
+     data = this.generateDefaultObjectType(data[0].target);
+     this.performOperation(data);
+    } else 
     this.performOperation(data);
-  }
+ }
 
   //common Operation
   init(obj) {
@@ -61,13 +65,16 @@ class MiniJs {
   //perform all all operation based on action mapper
   performOperation(data) {
     data.forEach((item) => {
-      const key = this.getMainKeyFromCurrentPath(item.currentPath);
-      this.performLoopOperation(item, key);
-      this.performTextOperation(item, key);
-      this.performInputOperation(item, key);
-      this.performIfStatementOperation(item, key);
-      this.performAttributeAddOpeartaion(item, key);
-      this.performClassOpeartion(item, key);
+      if(!item.currentPath.endsWith('.length')) {
+        const key = this.getMainKeyFromCurrentPath(item.currentPath);
+        this.performLoopOperation(item, key);
+        this.performTextOperation(item, key);
+        this.performInputOperation(item, key);
+        this.performIfStatementOperation(item, key);
+        this.performAttributeAddOpeartaion(item, key);
+        this.performClassOpeartion(item, key);
+      }
+        
     });
   }
 
@@ -349,7 +356,7 @@ class MiniJs {
   generateDefaultObjectType(data, nestedKey = "") {
     if (nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
-      return data.map((item, index) => {
+        return data.map((item, index) => {
         return {
           type: "add",
           target: data,
@@ -433,8 +440,8 @@ class MiniJs {
           this.listElements[targetKey].push(
             element.firstElementChild.cloneNode(true)
           );
-          // this.removeAllchildNodes(element);
-          element.removeChild(element.firstElementChild);
+          this.removeAllchildNodes(element);
+          // element.removeChild(element.firstElementChild);
         });
       } else if (typeof obj[item] == "object") {
         this.initForLoop(obj[item], key + item);
@@ -527,7 +534,7 @@ class MiniJs {
   addAllAttributeToChildren(selector, item, ele, varName) {
     const attr = ele.getAttribute(selector);
     if (attr) {
-      if (attr.startsWith(varName)) {
+      if (attr.startsWith(varName + ".") || attr == varName) {
         ele.setAttribute(selector, attr.replace(varName, item.currentPath));
       }
     }
