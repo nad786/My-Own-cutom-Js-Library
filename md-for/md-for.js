@@ -3,7 +3,8 @@ const instance = MiniJs.create({
     todoItem: "",
     users: [{fname: "john", lname: "doe", attrVal: "name"}],
     user: {fname: "", lname: "", attrVal: ""},
-    name: "Nad"
+    name: "Nad",
+    list: ["Hi", "Hello"]
 
 }, {target: 'loop'})
 document.getElementById("todolist").addEventListener("click", (e) => {
