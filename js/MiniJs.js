@@ -262,7 +262,7 @@ class MiniJs {
   }
 
   initInputChanges(data) {
-    if (this.container.querySelector("md-input")) {
+    if (this.container.querySelector("[md-input]")) {
       data.forEach((item) => {
         if (item.property != "length") {
           if (typeof item.newValue == "object") {
