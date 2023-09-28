@@ -14,7 +14,7 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    if (data.length == 1 && Array.isArray(data[0].newValue)) {
+    if (data.length == 1 && (Array.isArray(data[0].newValue) || typeof data[0].newValue == 'object')) {
       const key = data[0].currentPath.includes(".")
         ? this.getMainKeyFromCurrentPath(data[0].currentPath)
         : "";
