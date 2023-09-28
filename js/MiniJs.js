@@ -48,15 +48,6 @@ class MiniJs {
       }
       let val = this.getValueFromkeyWithDot(item.newValue, textKey);
       cb(ele, val);
-      // if (textKey && typeof item.newValue == "object") {
-      //   if (textKey.startsWith("!")) {
-      //     textKey = textKey.slice(1);
-      //   }
-      //   let val = this.getValueFromkeyWithDot(item.newValue, textKey);
-      //   cb(ele, val);
-      // } else {
-      //   cb(ele, item.newValue);
-      // }
     } else {
       const nodes = ele.querySelectorAll(`[${selector}]`);
       nodes.forEach((node) => {
@@ -477,12 +468,31 @@ class MiniJs {
       if (temp || tempInput || ifEle || ifNotEle || attrEle) {
         this.updatePropertyInLoop({ item, key });
       } else {
-        const varName = element.getAttribute("md-let");
         const ele = this.listElements[key][index].cloneNode(true);
+        const varName = element.getAttribute("md-let");
+        const filter = ele.getAttribute("md-filter");
+        if (filter && !this.filterLoopData(item, ele, varName, filter)) {
+          return;
+        }
         this.updateAllPropertyToChildrenInLoop(item, ele, varName);
         element.appendChild(ele);
       }
     });
+  }
+
+  filterLoopData(item, ele, key, filter) {
+    let equal = '=='
+    let split = filter.split("==").map((item) => item.trim());
+    if(split.length ==1) {
+      equal = '!='
+      split = filter.split("!=").map((item) => item.trim());
+    }
+    if (split[0].startsWith(key + ".")) {
+      split[0] = split[0].replace(key, item.currentPath);
+    }
+
+    ele.setAttribute("md-filter", split.join("=="));
+    return eval(this.getValueFromkeyWithDot(this.lib, split[0]) + equal + split[1]);
   }
 
   updateAllPropertyToChildrenInLoop(item, ele, varName) {
