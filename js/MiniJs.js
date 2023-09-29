@@ -332,9 +332,10 @@ class MiniJs {
     const elements = this.container.querySelectorAll(`[md-input="${key}"]`);
     if (elements.length) {
       elements.forEach((element) => {
+        const typeattr = element.getAttribute("type")
         if (
           element.tagName == "INPUT" &&
-          element.getAttribute("type") == "text"
+          (!typeattr || typeattr == "text")
         ) {
           element.removeEventListener(
             "keyup",
@@ -361,13 +362,14 @@ class MiniJs {
   //utility function
   //get first key of curretn path
   getMainKeyFromCurrentPath(currentPath) {
-    let key = currentPath;
-    if (currentPath.indexOf(".") >= 0) {
+    let key = currentPath.split(".");
+    if (key.length > 1) {
       key = currentPath.split(".");
-      key.pop();
-      key = key.join(".");
+      if(!isNaN(key[key.length-1])) {
+        key.pop();
+      }
     }
-    return key;
+    return key.join(".");
   }
 
   getValueFromkeyWithDot(obj, key) {
