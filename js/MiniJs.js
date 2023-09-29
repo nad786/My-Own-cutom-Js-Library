@@ -278,7 +278,7 @@ class MiniJs {
     }
   }
 
-  performInputKeyUpEvent(e) {
+  performInputChangeEvent(e) {
     const attrArr = e.target.getAttribute("md-input").split(".");
     const targetKey = attrArr.pop();
     let obj = this.lib;
@@ -330,20 +330,20 @@ class MiniJs {
         ) {
           element.removeEventListener(
             "keyup",
-            this.performInputKeyUpEvent.bind(this)
+            this.performInputChangeEvent.bind(this)
           );
           element.addEventListener(
             "keyup",
-            this.performInputKeyUpEvent.bind(this)
+            this.performInputChangeEvent.bind(this)
           );
         } else {
           element.removeEventListener(
             "change",
-            this.performInputKeyUpEvent.bind(this)
+            this.performInputChangeEvent.bind(this)
           );
           element.addEventListener(
             "change",
-            this.performInputKeyUpEvent.bind(this)
+            this.performInputChangeEvent.bind(this)
           );
         }
       });
