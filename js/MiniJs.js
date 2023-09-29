@@ -10,19 +10,27 @@ class MiniJs {
     const { parentSelector = "html", target = null } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
-    this.init(obj);
   }
 
   detectChanges(data) {
     if (
       data.length == 1 &&
-      (Array.isArray(data[0].newValue) || typeof data[0].newValue == "object")
+      (typeof data[0].newValue == "object")
     ) {
-      const key = data[0].currentPath.includes(".")
-        ? this.getMainKeyFromCurrentPath(data[0].currentPath)
-        : "";
-      const temp = this.generateDefaultObjectType(data[0].target, key);
-      this.performOperation([data[0], ...temp]);
+      let item;
+      let currentPath = data[0].currentPath;
+      let isArray = Array.isArray(data[0].newValue) || !isNaN(data[0].property)
+      if(isArray) {
+        item = data;
+      } else {
+        let split = currentPath.split(".");
+        let targetKey = currentPath;
+        if(split.length>1) {
+          targetKey = split.pop();
+        }
+        item = this.generateDefaultObjectType(this.getValueFromkeyWithDot(data[0].target, targetKey), currentPath);
+      }
+      this.performOperation(item);
     } else {
       this.performOperation(data);
     }
@@ -181,7 +189,7 @@ class MiniJs {
 
   hideShowELement(item, ele, flag = false) {
     const attr = ele.getAttribute("md-if");
-    if(attr) {
+    if (attr) {
       const display = ele.getAttribute("md-display") ?? "block";
       if (attr.includes("=")) {
         const data = this.checkCondition(item, ele, "", attr, false);
@@ -254,7 +262,7 @@ class MiniJs {
       const chechboxEle = this.container.querySelector(
         `[md-input="${item.currentPath}"][type="checkbox"]`
       );
-      if(chechboxEle) {
+      if (chechboxEle) {
         if (chechboxEle.value == item.newValue) {
           chechboxEle.checked = true;
         }
@@ -285,8 +293,8 @@ class MiniJs {
     attrArr.forEach((item) => {
       obj = obj?.[item];
     });
-    if(e.target.type == 'checkbox' || e.target.type == 'radio') {
-      if( e.target.checked) {
+    if (e.target.type == "checkbox" || e.target.type == "radio") {
+      if (e.target.checked) {
         obj[targetKey] = e.target.value;
       } else {
         obj[targetKey] = "";
@@ -372,25 +380,27 @@ class MiniJs {
   }
 
   generateDefaultObjectType(data, nestedKey = "") {
+    let tempArr = [];
     if (nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
-      const temp = data.map((item, index) => {
-        return {
-          type: "add",
-          target: data,
-          currentPath: `${nestedKey}${index}`,
-          newValue: item,
-        };
-      });
-      temp.push({
+      // const temp = data.map((item, index) => {
+      //   return {
+      //     type: "add",
+      //     target: data,
+      //     currentPath: `${nestedKey}${index}`,
+      //     newValue: item,
+      //   };
+      // });
+      if(nestedKey.endsWith(".")) nestedKey = nestedKey.slice(0, nestedKey.length-1)
+      tempArr.push({
         type: "add",
         target: data,
-        currentPath: `${nestedKey}length`,
-        newValue: data.length,
+        currentPath: `${nestedKey}`,
+        newValue: data,
       });
-      return temp;
+      return tempArr;
     } else {
-      let tempArr = [];
+      
       for (let item in data) {
         if (typeof data[item] == "object") {
           const temp = this.generateDefaultObjectType(
@@ -452,19 +462,19 @@ class MiniJs {
     if (key) key += ".";
     for (let item in obj) {
       if (Array.isArray(obj[item])) {
+        const targetKey = key + item;
         const forList = this.container.querySelectorAll(
-          `[md-for="${key + item}"]`
+          `[md-for="${targetKey}"]`
         );
         forList.forEach((element) => {
-          const targetKey = key+item;;
+  
           if (!this.listContainer[targetKey]) {
             this.listContainer[targetKey] = [];
             this.listElements[targetKey] = [];
           }
+          const clonEle = element.firstElementChild.cloneNode(true);
           this.listContainer[targetKey].push(element);
-          this.listElements[targetKey].push(
-            element.firstElementChild.cloneNode(true)
-          );
+          this.listElements[targetKey].push(clonEle);
           this.removeAllchildNodes(element);
           // element.removeChild(element.firstElementChild);
         });
@@ -486,27 +496,43 @@ class MiniJs {
 
   addPropertyInLoop({ item, key, elements }) {
     elements.forEach((element, index) => {
-      const temp = element.querySelector(`[md-text^="${item.currentPath}"]`);
-      const tempInput = element.querySelector(
-        `[md-input^="${item.currentPath}"]`
-      );
-      const ifEle = element.querySelector(`[md-if^="${item.currentPath}"]`);
-      const ifNotEle = element.querySelector(`[md-if^="!${item.currentPath}"]`);
-      const attrEle = element.querySelector(
-        `[md-attr^="!${item.currentPath}"]`
-      );
-      if (temp || tempInput || ifEle || ifNotEle || attrEle) {
-        this.updatePropertyInLoop({ item, key });
-      } else {
+      // const temp = element.querySelector(`[md-text^="${item.currentPath}"]`);
+      // const tempInput = element.querySelector(
+      //   `[md-input^="${item.currentPath}"]`
+      // );
+      // const ifEle = element.querySelector(`[md-if^="${item.currentPath}"]`);
+      // const ifNotEle = element.querySelector(`[md-if^="!${item.currentPath}"]`);
+      // const attrEle = element.querySelector(
+      //   `[md-attr^="!${item.currentPath}"]`
+      // );
+      // if (temp || tempInput || ifEle || ifNotEle || attrEle) {
+      //   this.updatePropertyInLoop({ item, key });
+      // } else {
         const ele = this.listElements[key][index].cloneNode(true);
         const varName = element.getAttribute("md-let");
         const filter = ele.getAttribute("md-filter");
-        if (filter && !this.checkCondition(item, ele, varName, filter)) {
-          return;
+        if(Array.isArray(item.newValue)) {
+          const frag = document.createDocumentFragment();
+          item.newValue.forEach((tempItem, idx) => {
+            const ele = this.listElements[key][index].cloneNode(true);
+            const obj = {...item, currentPath: item.currentPath + "." +idx, newValue: tempItem}
+            if (filter && !this.checkCondition(obj, ele, varName, filter)) {
+              return;
+            }
+            this.updateAllPropertyToChildrenInLoop(obj, ele, varName);
+            frag.appendChild(ele);
+          });
+          element.appendChild(frag);
+        } else {
+          const varName = element.getAttribute("md-let");
+          const filter = ele.getAttribute("md-filter");
+          if (filter && !this.checkCondition(item, ele, varName, filter)) {
+            return;
+          }
+          this.updateAllPropertyToChildrenInLoop(item, ele, varName);
+          element.appendChild(ele);
         }
-        this.updateAllPropertyToChildrenInLoop(item, ele, varName);
-        element.appendChild(ele);
-      }
+      // }
     });
   }
 
@@ -649,18 +675,7 @@ class MiniJs {
     this.listContainer[key].forEach((element, index) => {
       if (Array.isArray(item.newValue)) {
         this.removeAllchildNodes(element);
-        item.newValue.forEach((tempArr, index) => {
-          this.addPropertyInLoop({
-            item: {
-              ...item,
-              type: "add",
-              currentPath: item.currentPath + `.${index}`,
-              newValue: tempArr,
-            },
-            key,
-            elements: [element],
-          });
-        });
+        this.addPropertyInLoop({item, key, elements: [element]});
       } else if (typeof item.newValue == "object") {
         const keys = this.generateKeyWithDotSeperated(item.newValue);
         keys.forEach((key) => {
@@ -692,6 +707,7 @@ class MiniJs {
 
   static create(obj, rest = {}) {
     const instance = new MiniJs(obj, rest);
+    instance.init(obj);
     return instance.lib;
   }
 }

@@ -1,6 +1,7 @@
 console.time('start');
+console.log('start');
 let list = [];
-for(let i=0;i<1000;i++) {
+for(let i=0;i<10;i++) {
     list.push({name: "Nad", id: i, title: "Nad "+i});
 }
 const instance = MiniJs.create({
