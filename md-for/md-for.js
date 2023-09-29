@@ -1,7 +1,7 @@
 console.time('start');
 let list = [];
 for(let i=0;i<1000;i++) {
-    list.push({name: "Nad", id: i});
+    list.push({name: "Nad", id: i, title: "Nad "+i});
 }
 const instance = MiniJs.create({
     todoList: list,

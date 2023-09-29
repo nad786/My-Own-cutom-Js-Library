@@ -24,8 +24,10 @@
         <button id="todolist">Add List</button><br>
         <div class="registration">
             <ul md-for="todoList" md-let="item">
-                <li>
+                <li md-if="item.id == 10">
+                  <span md-text="item.id"></span>
                   <span md-text="item.name"></span>
+                  <span md-text="item.title" ></span>
                 </li>
             </ul>
         </div>

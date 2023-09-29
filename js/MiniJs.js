@@ -181,28 +181,30 @@ class MiniJs {
 
   hideShowELement(item, ele, flag = false) {
     const attr = ele.getAttribute("md-if");
-    const display = ele.getAttribute("md-display") ?? "block";
-    if (attr && attr.includes("=")) {
-      const data = this.checkCondition(item, ele, "", attr, false);
-      if (data) {
-        ele.style.display = display;
+    if(attr) {
+      const display = ele.getAttribute("md-display") ?? "block";
+      if (attr.includes("=")) {
+        const data = this.checkCondition(item, ele, "", attr, false);
+        if (data) {
+          ele.style.display = display;
+        } else {
+          ele.style.display = "none";
+        }
       } else {
-        ele.style.display = "none";
+        this.performAllOperationForAllItsChildNodes({
+          flag,
+          item,
+          ele,
+          selector: "md-if",
+          cb: (ele, val) => {
+            if ((val && attr[0] != "!") || (!val && attr[0] == "!")) {
+              ele.style.display = display;
+            } else {
+              ele.style.display = "none";
+            }
+          },
+        });
       }
-    } else {
-      this.performAllOperationForAllItsChildNodes({
-        flag,
-        item,
-        ele,
-        selector: "md-if",
-        cb: (ele, val) => {
-          if ((val && attr[0] != "!") || (!val && attr[0] == "!")) {
-            ele.style.display = display;
-          } else {
-            ele.style.display = "none";
-          }
-        },
-      });
     }
   }
 
