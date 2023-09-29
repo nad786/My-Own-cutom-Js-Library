@@ -14,7 +14,10 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    if (data.length == 1 && (Array.isArray(data[0].newValue) || typeof data[0].newValue == 'object')) {
+    if (
+      data.length == 1 &&
+      (Array.isArray(data[0].newValue) || typeof data[0].newValue == "object")
+    ) {
       const key = data[0].currentPath.includes(".")
         ? this.getMainKeyFromCurrentPath(data[0].currentPath)
         : "";
@@ -159,31 +162,50 @@ class MiniJs {
   //if opeartion
   performIfStatementOperation(item) {
     [`${item.currentPath}`, `!${item.currentPath}`].forEach((selector) => {
-      const elements = this.container.querySelectorAll(`[md-if="${selector}"]`);
+      const elements = this.container.querySelectorAll(
+        `[md-if="${selector}"]`
+      );
       if (elements.length) {
         elements.forEach((element) => {
           this.hideShowELement(item, element);
         });
       }
     });
+    const elements = this.container.querySelectorAll(
+      `[md-if^="${item.currentPath}"]`
+    );
+    if (elements.length) {
+      elements.forEach((element) => {
+        this.hideShowELement(item, element);
+      });
+    }
   }
 
   hideShowELement(item, ele, flag = false) {
-    this.performAllOperationForAllItsChildNodes({
-      flag,
-      item,
-      ele,
-      selector: "md-if",
-      cb: (ele, val) => {
-        const attr = ele.getAttribute("md-if");
-        const display = ele.getAttribute("md-display") ?? "block";
-        if ((val && attr[0] != "!") || (!val && attr[0] == "!")) {
-          ele.style.display = display;
-        } else {
-          ele.style.display = "none";
-        }
-      },
-    });
+    const attr = ele.getAttribute("md-if");
+    const display = ele.getAttribute("md-display") ?? "block";
+    if (attr.includes("=")) {
+      const data = this.checkCondition(item, ele, "", attr, false);
+      if (data) {
+        ele.style.display = display;
+      } else {
+        ele.style.display = "none";
+      }
+    } else {
+      this.performAllOperationForAllItsChildNodes({
+        flag,
+        item,
+        ele,
+        selector: "md-if",
+        cb: (ele, val) => {
+          if ((val && attr[0] != "!") || (!val && attr[0] == "!")) {
+            ele.style.display = display;
+          } else {
+            ele.style.display = "none";
+          }
+        },
+      });
+    }
   }
 
   //text opeartion
@@ -213,12 +235,24 @@ class MiniJs {
   //input opeartion
   performInputOperation(item) {
     const elements = this.container.querySelectorAll(
-      `[md-input="${item.currentPath}"]`
+      `[md-input="${item.currentPath}"]:not([type="checkbox"],[type="radio"])`
     );
     if (elements.length) {
       elements.forEach((element) => {
         this.modifyMdInputValue(item, element);
       });
+    } else {
+      const elements = this.container.querySelectorAll(
+        `[md-input="${item.currentPath}"][type="radio"]`
+      );
+      if(elements.length) {
+        elements.forEach(element => {
+          if(element.value == item.newValue) {
+            element.checked = true;
+          }
+        })
+      }
+
     }
   }
 
@@ -276,7 +310,7 @@ class MiniJs {
     const elements = this.container.querySelectorAll(`[md-input="${key}"]`);
     if (elements.length) {
       elements.forEach((element) => {
-        if (element.tagName == "INPUT") {
+        if (element.tagName == "INPUT" && element.getAttribute("type") == 'text') {
           element.removeEventListener(
             "keyup",
             this.performInputKeyUpEvent.bind(this)
@@ -285,7 +319,7 @@ class MiniJs {
             "keyup",
             this.performInputKeyUpEvent.bind(this)
           );
-        } else if (element.tagName == "SELECT") {
+        } else {
           element.removeEventListener(
             "change",
             this.performInputKeyUpEvent.bind(this)
@@ -471,7 +505,7 @@ class MiniJs {
         const ele = this.listElements[key][index].cloneNode(true);
         const varName = element.getAttribute("md-let");
         const filter = ele.getAttribute("md-filter");
-        if (filter && !this.filterLoopData(item, ele, varName, filter)) {
+        if (filter && !this.checkCondition(item, ele, varName, filter)) {
           return;
         }
         this.updateAllPropertyToChildrenInLoop(item, ele, varName);
@@ -480,19 +514,23 @@ class MiniJs {
     });
   }
 
-  filterLoopData(item, ele, key, filter) {
-    let equal = '=='
+  checkCondition(item, ele, key, filter, fromLoop = true) {
+    let equal = true;
     let split = filter.split("==").map((item) => item.trim());
-    if(split.length ==1) {
-      equal = '!='
+    if (split.length == 1) {
+      equal = false;
       split = filter.split("!=").map((item) => item.trim());
     }
-    if (split[0].startsWith(key + ".")) {
-      split[0] = split[0].replace(key, item.currentPath);
+    if (fromLoop) {
+      if (split[0].startsWith(key + ".")) {
+        split[0] = split[0].replace(key, item.currentPath);
+      }
+      ele.setAttribute("md-filter", split.join("=="));
     }
-
-    ele.setAttribute("md-filter", split.join("=="));
-    return eval(this.getValueFromkeyWithDot(this.lib, split[0]) + equal + split[1]);
+    if(!equal) {
+      return this.getValueFromkeyWithDot(this.lib, split[0]) != split[1];
+    }
+    return  this.getValueFromkeyWithDot(this.lib, split[0]) == split[1];
   }
 
   updateAllPropertyToChildrenInLoop(item, ele, varName) {
