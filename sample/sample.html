@@ -6,47 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <link href="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.css" rel="stylesheet">
+ 
+<script src="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.js"></script>
+
     <script src="../plugin/observable-slim.js"></script>
     <script src="../js/MiniJs.js"></script>
     <script src="script.js" defer></script>
+    <script>
+      console.time('load');
+    </script>
   </head>
   <body>
-    <div class="container">
+    <!-- <div class="container">
         <ul md-for="list" md-let="item">
             <li>
-              <div md-text="item.name" md-if="show" md-attr="data-id=item.label" md-class="active=item.label" md-text="name">!Hide</div>
-              <div md-text="item.label" md-if="!show" md-attr="data-id=item.label" md-class="active=item.label">Hide</div>
-  
-              <!-- <span md-text="item.value"></span>
-              <span md-if="item.show" md-attr="data-id=label">Show/Hide</span>
-              <span md-if="!show">!Show/Hide</span> -->
+             
+                <a md-text="item.title"></a>
+                <a md-text="item.price"></a>
+                <a md-text="item.stock"></a>
+                <a md-text="item.brand"></a>
+                <a md-text="item.rating"></a>
             </li>
-            <!-- <div md-if="list.length">Hello</div> -->
+           
         </ul>
-        <!-- <div md-class='{"active":"active"}' class="conatiner">Active</div>
-        <div md-class="not-active=!active;show=!show" class="container">Not Active</div> -->
-        <!-- <div md-for="listArr.list">
-                <label md-text></label>
-        </div> -->
-        <!-- <h3 md-text="key"></h3>
-        <h3 md-text="nested1.nested2">Hide/ show Element</h3> 
-        <h3 md-text="nested1.nested2">Hide/ show Element with not</h3> 
-            <input md-input="nested1.nested2" md-attr="data-id = nested1.nested2">
-            <h3 md-text="nested1.nested2"></h3> -->
-    </div>
+        <a md-if="!users.length">No Users</a>
+    </div> -->
 
-   
-    <!-- <input md-input="name" md-attr="data-id=name">
-    <div md-text="name"></div>
-    <div md-for="persons">
-      <div md-for="hobby">
-        <div>
-          <label>Hello</label>
-          <span md-text="name"></span>
-        </div>
-      </div>
-    </div>
-    <div md-text="task.taskid.10"></div> -->
+    <table id="example" class="display" style="width:100%">
+      <thead>
+          <tr>
+              <th>Name</th>
+              <th>Position</th>
+              <th>Office</th>
+              <th>Extn.</th>
+              <th>Start date</th>
+              <th>Salary</th>
+          </tr>
+      </thead>
+      <tbody id="test" md-for="list" md-let="item">
+        <tr><td md-text="item.id"></td><td md-text="item.title"></td><td md-text="item.price"></td><td md-text="item.stock"></td><td md-text="item.brand"></td><td md-text="item.rating"></td></tr>
+      </tbody>
+  </table>
 
   </body>
 </html>

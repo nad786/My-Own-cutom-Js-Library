@@ -24,11 +24,8 @@
         <button id="todolist">Add List</button><br>
         <div class="registration">
             <ul md-for="todoList" md-let="item">
-                <li >
-                  <span md-text="item"></span>
-                  <span md-for="list" md-let="temp">
-                    <span md-text="temp"></span>
-                  </span>
+                <li>
+                  <span md-text="item.name"></span>
                 </li>
             </ul>
         </div>

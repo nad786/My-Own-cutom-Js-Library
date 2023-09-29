@@ -1,12 +1,17 @@
+console.time('start');
+let list = [];
+for(let i=0;i<1000;i++) {
+    list.push({name: "Nad", id: i});
+}
 const instance = MiniJs.create({
-    todoList: ["first list"],
+    todoList: list,
     todoItem: "",
     users: [{fname: "john", lname: "doe", attrVal: "name"}],
     user: {fname: "", lname: "", attrVal: ""},
     name: "Nad",
-    list: ["Hi", "Hello"]
 
-}, {target: 'loop'})
+})
+console.timeEnd('start');
 document.getElementById("todolist").addEventListener("click", (e) => {
     if(instance.todoItem) {
         instance.todoList.push(instance.todoItem);

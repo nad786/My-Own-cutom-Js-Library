@@ -26,6 +26,19 @@
                 <input type="text" md-input="person.lname"><br><div md-text="person.lname"></div>
                 <label for="Email">Email</label><br>
                 <input type="text" md-input="person.email"><br><div md-text="person.email"></div>
+                <div class="form-group">
+                  <input type="checkbox" name="hobby" md-input="person.hobbies.0" value="online"><label>Onine Game</label><br>
+                  <input type="checkbox" name="hobby" md-input="person.hobbies.1" value="ofline"><label>Offline Game</label><br>
+                </div>
+               
+                <input type="radio" name="gender" md-input="person.gender" value="female"><input type="radio" name="gender" md-input="person.gender" value="male"><br><div md-text="person.gender"></div>
+                <select md-input="person.group">
+                  <option>Select</option>
+                  <option>1</option>
+                  <option>2</option>
+                  <option>4</option>
+                  <option>5</option>
+                </select><div md-text="person.group"></div>
                 <button id="submit" type="button">Submit</button>
               </form>
               <div md-text="outputPayload"></div>
@@ -34,8 +47,9 @@
         <h1>Js code for the same</h1>
         <pre>
 const instance = MiniJs.create( {
-    person: {fname: "john", lname: 'doe', email: "nad@nad.com" },
-    outputPayload: ""
+    person: {fname: "john", lname: 'doe', email: "nad@nad.com", 
+    hobbies: ["online", ""], gender: "male", group: "" },
+    outputPayload: "",
 })
 document.getElementById("submit").addEventListener("click", (e) => {
     instance.outputPayload = JSON.stringify(instance.person);

@@ -71,9 +71,9 @@ class MiniJs {
       const key = this.getMainKeyFromCurrentPath(item.currentPath);
       if (!item.currentPath.endsWith(".length")) {
         this.performLoopOperation(item, key);
+        this.performAttributeAddOpeartaion(item, key);
         this.performTextOperation(item, key);
         this.performInputOperation(item, key);
-        this.performAttributeAddOpeartaion(item, key);
         this.performClassOpeartion(item, key);
       }
       this.performIfStatementOperation(item, key);
@@ -162,9 +162,7 @@ class MiniJs {
   //if opeartion
   performIfStatementOperation(item) {
     [`${item.currentPath}`, `!${item.currentPath}`].forEach((selector) => {
-      const elements = this.container.querySelectorAll(
-        `[md-if="${selector}"]`
-      );
+      const elements = this.container.querySelectorAll(`[md-if="${selector}"]`);
       if (elements.length) {
         elements.forEach((element) => {
           this.hideShowELement(item, element);
@@ -184,7 +182,7 @@ class MiniJs {
   hideShowELement(item, ele, flag = false) {
     const attr = ele.getAttribute("md-if");
     const display = ele.getAttribute("md-display") ?? "block";
-    if (attr.includes("=")) {
+    if (attr && attr.includes("=")) {
       const data = this.checkCondition(item, ele, "", attr, false);
       if (data) {
         ele.style.display = display;
@@ -245,14 +243,20 @@ class MiniJs {
       const elements = this.container.querySelectorAll(
         `[md-input="${item.currentPath}"][type="radio"]`
       );
-      if(elements.length) {
-        elements.forEach(element => {
-          if(element.value == item.newValue) {
-            element.checked = true;
-          }
-        })
-      }
+      elements.forEach((element) => {
+        if (element.value == item.newValue) {
+          element.checked = true;
+        }
+      });
 
+      const chechboxEle = this.container.querySelector(
+        `[md-input="${item.currentPath}"][type="checkbox"]`
+      );
+      if(chechboxEle) {
+        if (chechboxEle.value == item.newValue) {
+          chechboxEle.checked = true;
+        }
+      }
     }
   }
 
@@ -265,7 +269,7 @@ class MiniJs {
         selector: "md-input",
         cb: (ele, val) => {
           ele.value = val;
-          var event = new Event("keyup");
+          const event = new Event("keyup");
           ele.dispatchEvent(event);
         },
       });
@@ -279,7 +283,15 @@ class MiniJs {
     attrArr.forEach((item) => {
       obj = obj?.[item];
     });
-    obj[targetKey] = e.target.value;
+    if(e.target.type == 'checkbox' || e.target.type == 'radio') {
+      if( e.target.checked) {
+        obj[targetKey] = e.target.value;
+      } else {
+        obj[targetKey] = "";
+      }
+    } else {
+      obj[targetKey] = e.target.value;
+    }
     this.inputFlag = false;
     setTimeout(() => {
       this.inputFlag = true;
@@ -295,22 +307,25 @@ class MiniJs {
             const objKeys = this.generateKeyWithDotSeperated(item.newValue);
             objKeys.forEach((key) => {
               const keyForEvent = `${mainKey}.${key}`;
-              this.attachedKeyUpEvent(keyForEvent);
+              this.attachedEventToForm(keyForEvent);
             });
           } else {
             const key = item.currentPath;
-            this.attachedKeyUpEvent(key);
+            this.attachedEventToForm(key);
           }
         }
       });
     }
   }
 
-  attachedKeyUpEvent(key) {
+  attachedEventToForm(key) {
     const elements = this.container.querySelectorAll(`[md-input="${key}"]`);
     if (elements.length) {
       elements.forEach((element) => {
-        if (element.tagName == "INPUT" && element.getAttribute("type") == 'text') {
+        if (
+          element.tagName == "INPUT" &&
+          element.getAttribute("type") == "text"
+        ) {
           element.removeEventListener(
             "keyup",
             this.performInputKeyUpEvent.bind(this)
@@ -334,34 +349,13 @@ class MiniJs {
   }
 
   //utility function
-  //mapped action to work with only thos operation with value changes
-  // mappedActionForPerformance(obj) {
-  //   const mappedKeys = this.generateKeyWithDotSeperated(obj);
-  //   mappedKeys.forEach((item) => {
-  //     const key = this.getMainKeyFromCurrentPath(item);
-  //     if (this.container.querySelector(`[md-for^="${key}"]`)) {
-  //       this.actionMapper.loopCheck[key] = true;
-  //     }
-  //     if (this.container.querySelector(`[md-if*="${key}"]`)) {
-  //       this.actionMapper["md-if"][key] = true;
-  //     }
-  //     if (this.container.querySelector(`[md-text^="${item}"]`)) {
-  //       this.actionMapper["md-text"][item] = true;
-  //     }
-  //     if (this.container.querySelector(`[md-input^="${item}"]`)) {
-  //       this.actionMapper["md-text"][item] = true;
-  //     }
-  //     if (this.container.querySelector(`[md-attr*="${key}"]`)) {
-  //       this.actionMapper.attrCheck[key] = true;
-  //     }
-  //   });
-  // }
-
   //get first key of curretn path
   getMainKeyFromCurrentPath(currentPath) {
     let key = currentPath;
     if (currentPath.indexOf(".") >= 0) {
-      key = currentPath.slice(0, currentPath.indexOf("."));
+      key = currentPath.split(".");
+      key.pop();
+      key = key.join(".");
     }
     return key;
   }
@@ -460,7 +454,7 @@ class MiniJs {
           `[md-for="${key + item}"]`
         );
         forList.forEach((element) => {
-          const targetKey = (key + item).split(".")[0];
+          const targetKey = key+item;;
           if (!this.listContainer[targetKey]) {
             this.listContainer[targetKey] = [];
             this.listElements[targetKey] = [];
@@ -527,10 +521,10 @@ class MiniJs {
       }
       ele.setAttribute("md-filter", split.join("=="));
     }
-    if(!equal) {
+    if (!equal) {
       return this.getValueFromkeyWithDot(this.lib, split[0]) != split[1];
     }
-    return  this.getValueFromkeyWithDot(this.lib, split[0]) == split[1];
+    return this.getValueFromkeyWithDot(this.lib, split[0]) == split[1];
   }
 
   updateAllPropertyToChildrenInLoop(item, ele, varName) {
@@ -565,7 +559,7 @@ class MiniJs {
       if (attr.includes(varName)) {
         const arr = attr.split(";").map((temp) => {
           temp = temp.split("=").map((temp) => temp.trim());
-          if (temp[1].startsWith(varName + ".")) {
+          if (temp[1] == varName || temp[1].startsWith(varName + ".")) {
             temp[1] = temp[1].replace(varName, item.currentPath);
           }
           return temp;
