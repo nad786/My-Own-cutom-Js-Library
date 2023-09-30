@@ -33,22 +33,13 @@
         </ul>
         <a md-if="!users.length">No Users</a>
     </div> -->
-
-    <table id="example" class="display" style="width:100%">
-      <thead>
-          <tr>
-              <th>Name</th>
-              <th>Position</th>
-              <th>Office</th>
-              <th>Extn.</th>
-              <th>Start date</th>
-              <th>Salary</th>
-          </tr>
-      </thead>
-      <tbody id="test" md-for="list" md-let="item">
-        <tr><td md-text="item.id"></td><td md-text="item.title"></td><td md-text="item.price"></td><td md-text="item.stock"></td><td md-text="item.brand"></td><td md-text="item.rating"></td></tr>
-      </tbody>
-  </table>
+   
+    <ul id="test">
+      
+    </ul>
+    <ul md-for="list" md-let="item">
+      <li ><span md-text="item.id"></span>  <span md-text="item.title"></span></li>
+    </ul>
 
   </body>
 </html>

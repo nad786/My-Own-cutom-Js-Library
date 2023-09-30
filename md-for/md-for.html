@@ -45,11 +45,11 @@
         <input md-input="user.attrVal"><br>
         <button id="addUser">Add User</button><br>
         <div class="registration">
-          <ul md-for="users" md-let="user">
+          <ul md-for="test.users" md-let="user">
               <li>
                 <span style="margin-right: 20px" md-text="user.fname"></span>
                 <span md-text="user.lname"></span>
-                <label md-attr="md-text=user.attrVal"></label>
+                <input md-input="user.inputVal">
               </li>
           </ul>
       </div>

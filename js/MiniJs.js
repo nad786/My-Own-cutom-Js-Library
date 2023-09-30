@@ -561,8 +561,8 @@ class MiniJs {
     // if (ele.hasAttribute("md-for") || ele.querySelector("[md-for]")) {
     //   this.addNestedLoopOp(item, ele, item.currentPath, varName);
     // }
-
-    const allNestedKeys = this.generateKeyWithDotSeperated(item.newValue);
+    const isCurrentValueisObject = typeof item.newValue == 'object';
+    const allNestedKeys =  isCurrentValueisObject ? this.generateKeyWithDotSeperated(item.newValue) : [item.newValue];
     this.addAllAttributeToChildren("md-text", item, ele, varName);
     this.addAllAttributeToChildren("md-if", item, ele, varName);
     this.addAllAttributeToChildren("md-input", item, ele, varName);
@@ -573,7 +573,7 @@ class MiniJs {
       const obj = {
         ...item,
         newValue: mainObj,
-        currentPath: item.currentPath + "." + currentKey,
+        currentPath: item.currentPath + isCurrentValueisObject? '' : "." + currentKey,
       };
       this.modifyMdInputValue(obj, ele, true);
       this.modifyMdTextValue(obj, ele, true);
