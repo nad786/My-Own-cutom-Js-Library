@@ -22,6 +22,7 @@ class MiniJs {
       let isArray = Array.isArray(data[0].newValue) || !isNaN(data[0].property)
       if(isArray) {
         item = data;
+        item.push({type: 'add', newValue: data[0].newValue.length, currentPath: `${data[0].currentPath}.length`, target: data[0]})
       } else {
         let split = currentPath.split(".");
         let targetKey = currentPath;
@@ -182,7 +183,9 @@ class MiniJs {
     );
     if (elements.length) {
       elements.forEach((element) => {
-        this.hideShowELement(item, element);
+        if(element.getAttribute('md-if').includes('=')) {
+          this.hideShowELement(item, element);
+        }
       });
     }
   }
@@ -399,6 +402,12 @@ class MiniJs {
         target: data,
         currentPath: `${nestedKey}`,
         newValue: data,
+      });
+      tempArr.push({
+        type: "add",
+        target: data,
+        currentPath: `${nestedKey}.length`,
+        newValue: data.length,
       });
       return tempArr;
     } else {

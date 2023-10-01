@@ -1,7 +1,7 @@
 console.time('start');
 console.log('start');
 let list = [];
-for(let i=0;i<2000;i++) {
+for(let i=0;i<10;i++) {
     list.push({name: "Nad", id: i, title: "Nad "+i});
 }
 const instance = MiniJs.create({
@@ -10,6 +10,7 @@ const instance = MiniJs.create({
     test : {users: [{fname: "john", lname: "doe", inputVal: "tesing", attrVal: "attr value"}]},
     user: {fname: "", lname: "", attrVal: ""},
     name: "Nad",
+    
 
 })
 console.timeEnd('start');

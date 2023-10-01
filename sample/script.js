@@ -1,16 +1,26 @@
-const list = [];
-for(let i=0;i<10000;i++) {
-    list.push( {title: "Text "+i, id: i});
+class A {
+    key = 'value';
+    get userId() {
+        return 1001;
+    }
+    #name = '';
+    set name(name) {
+        this.#name = name
+    }
+    get name() {
+        return this.#name
+    }
+
+    clickMe(e) {
+        this.name = e.target.value;
+    }
+
+    initEvents() {
+        document.getElementById("keyup").addEventListener('keyup', (e) => {
+            this.clickMe(e);
+        }) 
+    }
 }
-console.time('minijs')
-const instance = MiniJs.create({list})
-console.timeEnd('minijs')
-console.time('vanilla');
-const parent = document.querySelector('#test');
-// for(let i=0;i<list.length;i++) {
-//     const li = document.createElement('li');
-//     li.textContent = "Text "+list[i];
-//     parent.appendChild(li);
-// }
-console.timeEnd('vanilla');
-console.log("Completed")
+
+const o = MiniJs.create(new A());
+o.initEvents();
