@@ -13,23 +13,28 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    if (
-      data.length == 1 &&
-      (typeof data[0].newValue == "object")
-    ) {
+    if (data.length == 1 && typeof data[0].newValue == "object") {
       let item;
       let currentPath = data[0].currentPath;
-      let isArray = Array.isArray(data[0].newValue) || !isNaN(data[0].property)
-      if(isArray) {
+      let isArray = Array.isArray(data[0].newValue) || !isNaN(data[0].property);
+      if (isArray) {
         item = data;
-        item.push({type: 'add', newValue: data[0].newValue.length, currentPath: `${data[0].currentPath}.length`, target: data[0]})
+        item.push({
+          type: "add",
+          newValue: data[0].newValue.length,
+          currentPath: `${data[0].currentPath}.length`,
+          target: data[0],
+        });
       } else {
         let split = currentPath.split(".");
         let targetKey = currentPath;
-        if(split.length>1) {
+        if (split.length > 1) {
           targetKey = split.pop();
         }
-        item = this.generateDefaultObjectType(this.getValueFromkeyWithDot(data[0].target, targetKey), currentPath);
+        item = this.generateDefaultObjectType(
+          this.getValueFromkeyWithDot(data[0].target, targetKey),
+          currentPath
+        );
       }
       this.performOperation(item);
     } else {
@@ -44,6 +49,10 @@ class MiniJs {
     this.initForLoop(obj);
     this.performOperation(data);
     this.initInputChanges(data);
+  }
+
+  randomIntFromInterval(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min)
   }
 
   performAllOperationForAllItsChildNodes({
@@ -168,26 +177,63 @@ class MiniJs {
     });
   }
 
-  //if opeartion
+  //if opeartion to perform 
   performIfStatementOperation(item) {
-    [`${item.currentPath}`, `!${item.currentPath}`].forEach((selector) => {
-      const elements = this.container.querySelectorAll(`[md-if="${selector}"]`);
-      if (elements.length) {
-        elements.forEach((element) => {
-          this.hideShowELement(item, element);
-        });
-      }
-    });
     const elements = this.container.querySelectorAll(
-      `[md-if^="${item.currentPath}"]`
+      `[md-if*="${item.currentPath}"]`
     );
-    if (elements.length) {
-      elements.forEach((element) => {
-        if(element.getAttribute('md-if').includes('=')) {
-          this.hideShowELement(item, element);
+    try {
+      elements.forEach((ele) => {
+        let attr = ele.getAttribute("md-if")
+        let arr = attr.replaceAll(/[()]/g, '').split(/\s(&&|\|\|)\s/)
+          .filter((item, index) => index % 2 == 0)
+          .map((item) => {
+            const temp = item.split(/[\s]*[!]*[=]*[==][\s]*/);
+            return temp[0]?.[0] != "'" || temp[0]?.[0] != '"' || !isNaN(temp[0]) ? temp[0] : temp[1];
+          })
+          .map((item) => {
+            if(item[0] == '!') {
+              item = item.slice(1);
+            }
+            let val= this.getValueFromkeyWithDot(this.lib, item)
+            val = val === "" ? "''" :  val;
+            const varName = "fnVar" + this.randomIntFromInterval(1,1000);
+            attr = attr.replaceAll(item, varName);
+            return varName + "=" + (isNaN(val) ? `"${val}"` : val); 
+          });
+        console.log(arr);
+        let func = new Function(...arr, `return ${attr}`);
+        const display = ele.getAttribute("md-display") ?? "block";
+        if (func()) {
+          ele.style.display = display;
+        } else {
+          ele.style.display = "none";
         }
       });
+    } catch (err) {
+      console.log(err);
     }
+
+    
+
+    // [`${item.currentPath}`, `!${item.currentPath}`].forEach((selector) => {
+    //   const elements = this.container.querySelectorAll(`[md-if="${selector}"]`);
+    //   if (elements.length) {
+    //     elements.forEach((element) => {
+    //       this.hideShowELement(item, element);
+    //     });
+    //   }
+    // });
+    // const elements = this.container.querySelectorAll(
+    //   `[md-if^="${item.currentPath}"]`
+    // );
+    // if (elements.length) {
+    //   elements.forEach((element) => {
+    //     if(element.getAttribute('md-if').includes('=')) {
+    //       this.hideShowELement(item, element);
+    //     }
+    //   });
+    // }
   }
 
   hideShowELement(item, ele, flag = false) {
@@ -335,11 +381,8 @@ class MiniJs {
     const elements = this.container.querySelectorAll(`[md-input="${key}"]`);
     if (elements.length) {
       elements.forEach((element) => {
-        const typeattr = element.getAttribute("type")
-        if (
-          element.tagName == "INPUT" &&
-          (!typeattr || typeattr == "text")
-        ) {
+        const typeattr = element.getAttribute("type");
+        if (element.tagName == "INPUT" && (!typeattr || typeattr == "text")) {
           element.removeEventListener(
             "keyup",
             this.performInputChangeEvent.bind(this)
@@ -368,7 +411,7 @@ class MiniJs {
     let key = currentPath.split(".");
     if (key.length > 1) {
       key = currentPath.split(".");
-      if(!isNaN(key[key.length-1])) {
+      if (!isNaN(key[key.length - 1])) {
         key.pop();
       }
     }
@@ -396,7 +439,8 @@ class MiniJs {
       //     newValue: item,
       //   };
       // });
-      if(nestedKey.endsWith(".")) nestedKey = nestedKey.slice(0, nestedKey.length-1)
+      if (nestedKey.endsWith("."))
+        nestedKey = nestedKey.slice(0, nestedKey.length - 1);
       tempArr.push({
         type: "add",
         target: data,
@@ -411,7 +455,6 @@ class MiniJs {
       });
       return tempArr;
     } else {
-      
       for (let item in data) {
         if (typeof data[item] == "object") {
           const temp = this.generateDefaultObjectType(
@@ -478,7 +521,6 @@ class MiniJs {
           `[md-for="${targetKey}"]`
         );
         forList.forEach((element) => {
-  
           if (!this.listContainer[targetKey]) {
             this.listContainer[targetKey] = [];
             this.listElements[targetKey] = [];
@@ -519,30 +561,34 @@ class MiniJs {
       // if (temp || tempInput || ifEle || ifNotEle || attrEle) {
       //   this.updatePropertyInLoop({ item, key });
       // } else {
-        const ele = this.listElements[key][index].cloneNode(true);
-        const varName = element.getAttribute("md-let");
-        const filter = ele.getAttribute("md-filter");
-        if(Array.isArray(item.newValue)) {
-          const frag = document.createDocumentFragment();
-          item.newValue.forEach((tempItem, idx) => {
-            const ele = this.listElements[key][index].cloneNode(true);
-            const obj = {...item, currentPath: item.currentPath + "." +idx, newValue: tempItem}
-            if (filter && !this.checkCondition(obj, ele, varName, filter)) {
-              return;
-            }
-            this.updateAllPropertyToChildrenInLoop(obj, ele, varName);
-            frag.appendChild(ele);
-          });
-          element.appendChild(frag);
-        } else {
-          const varName = element.getAttribute("md-let");
-          const filter = ele.getAttribute("md-filter");
-          if (filter && !this.checkCondition(item, ele, varName, filter)) {
+      const ele = this.listElements[key][index].cloneNode(true);
+      const varName = element.getAttribute("md-let");
+      const filter = ele.getAttribute("md-filter");
+      if (Array.isArray(item.newValue)) {
+        const frag = document.createDocumentFragment();
+        item.newValue.forEach((tempItem, idx) => {
+          const ele = this.listElements[key][index].cloneNode(true);
+          const obj = {
+            ...item,
+            currentPath: item.currentPath + "." + idx,
+            newValue: tempItem,
+          };
+          if (filter && !this.checkCondition(obj, ele, varName, filter)) {
             return;
           }
-          this.updateAllPropertyToChildrenInLoop(item, ele, varName);
-          element.appendChild(ele);
+          this.updateAllPropertyToChildrenInLoop(obj, ele, varName);
+          frag.appendChild(ele);
+        });
+        element.appendChild(frag);
+      } else {
+        const varName = element.getAttribute("md-let");
+        const filter = ele.getAttribute("md-filter");
+        if (filter && !this.checkCondition(item, ele, varName, filter)) {
+          return;
         }
+        this.updateAllPropertyToChildrenInLoop(item, ele, varName);
+        element.appendChild(ele);
+      }
       // }
     });
   }
@@ -570,8 +616,10 @@ class MiniJs {
     // if (ele.hasAttribute("md-for") || ele.querySelector("[md-for]")) {
     //   this.addNestedLoopOp(item, ele, item.currentPath, varName);
     // }
-    const isCurrentValueisObject = typeof item.newValue == 'object';
-    const allNestedKeys =  isCurrentValueisObject ? this.generateKeyWithDotSeperated(item.newValue) : [item.newValue];
+    const isCurrentValueisObject = typeof item.newValue == "object";
+    const allNestedKeys = isCurrentValueisObject
+      ? this.generateKeyWithDotSeperated(item.newValue)
+      : [item.newValue];
     this.addAllAttributeToChildren("md-text", item, ele, varName);
     this.addAllAttributeToChildren("md-if", item, ele, varName);
     this.addAllAttributeToChildren("md-input", item, ele, varName);
@@ -582,7 +630,8 @@ class MiniJs {
       const obj = {
         ...item,
         newValue: mainObj,
-        currentPath: item.currentPath + isCurrentValueisObject? '' : "." + currentKey,
+        currentPath:
+          item.currentPath + isCurrentValueisObject ? "" : "." + currentKey,
       };
       this.modifyMdInputValue(obj, ele, true);
       this.modifyMdTextValue(obj, ele, true);
@@ -686,7 +735,7 @@ class MiniJs {
     this.listContainer[key].forEach((element, index) => {
       if (Array.isArray(item.newValue)) {
         this.removeAllchildNodes(element);
-        this.addPropertyInLoop({item, key, elements: [element]});
+        this.addPropertyInLoop({ item, key, elements: [element] });
       } else if (typeof item.newValue == "object") {
         const keys = this.generateKeyWithDotSeperated(item.newValue);
         keys.forEach((key) => {
