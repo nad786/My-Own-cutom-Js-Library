@@ -8,7 +8,8 @@ const instance = MiniJs.create({
     // length: 10,
     arr: ["test"],
     obj: {key: 'show'},
-    flag: true
+    flag: true,
+    display: false
 });
 
 function func() {

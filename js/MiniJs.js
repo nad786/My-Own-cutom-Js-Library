@@ -196,15 +196,15 @@ class MiniJs {
               item = item.slice(1);
             }
             let val= this.getValueFromkeyWithDot(this.lib, item)
-            val = val === "" ? "''" :  val;
             const varName = "fnVar" + this.randomIntFromInterval(1,1000);
             attr = attr.replaceAll(item, varName);
-            return varName + "=" + (isNaN(val) ? `"${val}"` : val); 
+            return `${varName}='${val}'`; 
           });
+        let obj = { temp:  ""};
         console.log(arr);
         let func = new Function(...arr, `return ${attr}`);
         const display = ele.getAttribute("md-display") ?? "block";
-        if (func()) {
+        if (func.call(obj)) {
           ele.style.display = display;
         } else {
           ele.style.display = "none";
