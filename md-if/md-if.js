@@ -1,16 +1,20 @@
+console.time("minijs")
+
 const instance = MiniJs.create({
-    // display: true, 
-    // key: "test1",
-    // test: {key: "test1"},
-    // num: 101,
-    // key: 'pkg',
-    // display: 'hide',
-    // length: 10,
-    arr: ["test"],
+    display: true, 
+    key: "test1",
+    test: {key: "test1"},
+    num: 101,
+    key: 'pkg',
+    display: 'hide',
+    length: 10,
     obj: {key: 'show'},
+    userName: 'userName',
+    arr: [],
     flag: true,
     display: false
 });
+console.timeEnd("minijs")
 
 function func() {
     console.log("Hello");

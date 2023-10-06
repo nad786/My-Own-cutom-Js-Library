@@ -51,8 +51,9 @@ class MiniJs {
     this.initInputChanges(data);
   }
 
-  randomIntFromInterval(min, max) { // min and max included 
-    return Math.floor(Math.random() * (max - min + 1) + min)
+  randomIntFromInterval(min, max) {
+    // min and max included
+    return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
   performAllOperationForAllItsChildNodes({
@@ -177,34 +178,49 @@ class MiniJs {
     });
   }
 
-  //if opeartion to perform 
+  //if opeartion to perform
   performIfStatementOperation(item) {
     const elements = this.container.querySelectorAll(
       `[md-if*="${item.currentPath}"]`
     );
     try {
       elements.forEach((ele) => {
-        let attr = ele.getAttribute("md-if")
-        let arr = attr.replaceAll(/[()]/g, '').split(/\s(&&|\|\|)\s/)
+        let attr = ele.getAttribute("md-if");
+        let arr = attr
+          .replaceAll(/[()]/g, "")
+          .split(/\s(&&|\|\|)\s/)
           .filter((item, index) => index % 2 == 0)
           .map((item) => {
-            const temp = item.split(/[\s]*[!]*[=]*[==][\s]*/);
-            return temp[0]?.[0] != "'" || temp[0]?.[0] != '"' || !isNaN(temp[0]) ? temp[0] : temp[1];
+            const temp = item.split(/[\s]*[!]*[=]+[\s]*/);
+            return temp[0]?.[0] != "'" || temp[0]?.[0] != '"' || !isNaN(temp[0])
+              ? temp[0]
+              : temp[1];
           })
           .map((item) => {
-            if(item[0] == '!') {
-              item = item.slice(1);
+            if (item[0] == "!") {
+              item = item.replaceAll("!", "");
             }
-            let val= this.getValueFromkeyWithDot(this.lib, item)
-            const varName = "fnVar" + this.randomIntFromInterval(1,1000);
-            attr = attr.replaceAll(item, varName);
-            return `${varName}='${val}'`; 
+            let val = this.getValueFromkeyWithDot(this.lib, item);
+            let varName = item;
+            if (item.includes(".")) {
+              varName = "fnVar" + this.randomIntFromInterval(1, 1000);
+              // attr = attr.replaceAll(item, varName);
+              const regexPattern = new RegExp(
+                `(?<!(["'][^"']*${item}[^"']*["']))${item}(?!(["'][^"']*${item}[^"']*["']))`,
+                "g"
+              );
+              attr = attr.replaceAll(regexPattern, varName);
+            }
+            if(isNaN(val)) {
+              return `${varName}='${val}'`;
+            } 
+            return `${varName}=${val}`;
           });
-        let obj = { temp:  ""};
+        let obj = { temp: "" };
         console.log(arr);
         let func = new Function(...arr, `return ${attr}`);
         const display = ele.getAttribute("md-display") ?? "block";
-        if (func.call(obj)) {
+        if (func()) {
           ele.style.display = display;
         } else {
           ele.style.display = "none";
@@ -213,8 +229,6 @@ class MiniJs {
     } catch (err) {
       console.log(err);
     }
-
-    
 
     // [`${item.currentPath}`, `!${item.currentPath}`].forEach((selector) => {
     //   const elements = this.container.querySelectorAll(`[md-if="${selector}"]`);
