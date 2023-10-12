@@ -423,6 +423,12 @@ class MiniJs {
             "change",
             this.performInputChangeEvent.bind(this)
           );
+
+          if(element.tagName == 'SELECT' && typeof jQuery != 'undefined') {
+            jQuery(this.container).on("select2:select", element, (e) => {
+              this.performInputChangeEvent(e);
+            })
+          }
         }
       });
     }
