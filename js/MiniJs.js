@@ -3,9 +3,6 @@ class MiniJs {
   listElements = {};
   listContainer = {};
   container = document;
-
-  //don't execute when changed from keyup event
-  inputFlag = true;
   constructor(obj, rest = {}) {
     const { parentSelector = "html", target = null } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
@@ -41,6 +38,7 @@ class MiniJs {
       this.performOperation(data);
     }
   }
+  
 
   //common Operation
   init(obj) {
@@ -49,6 +47,31 @@ class MiniJs {
     this.initForLoop(obj);
     this.performOperation(data);
     this.initInputChanges(data);
+  }
+
+  convertStringToFunction(str) {
+    const arr = str
+      .replaceAll(/[\s+()]/g, "")
+      .replaceAll(/(&&|\|\|)/g, "__")
+      .replaceAll(/(!*)(=+)/g, "__")
+      .split("__")
+      .filter((item) => item[0] != '"' && item[0] != "'" && isNaN(item))
+      .map((item) => {
+        if (item[0] == "!") {
+          item = item.replaceAll("!", "");
+        }
+        let val = this.getValueFromkeyWithDot(this.lib, item);
+        let varName = item;
+        if (item.includes(".")) {
+          varName = "fnVar" + this.randomIntFromInterval(1, 1000);
+          str = str.replaceAll(item, varName);
+        }
+        if (isNaN(val) || val === "") {
+          return `${varName}='${val}'`;
+        }
+        return `${varName}=${val}`;
+      });
+    return new Function(...arr, `return ${str}`);
   }
 
   randomIntFromInterval(min, max) {
@@ -93,8 +116,8 @@ class MiniJs {
         this.performAttributeAddOpeartaion(item, key);
         this.performTextOperation(item, key);
         this.performInputOperation(item, key);
-        this.performClassOpeartion(item, key);
       }
+      this.performClassOpeartion(item, key);
       this.performIfStatementOperation(item, key);
     });
   }
@@ -104,51 +127,32 @@ class MiniJs {
     const elements = this.container.querySelectorAll(
       `[md-class*="${item.currentPath}"]`
     );
-    if (elements.length) {
-      elements.forEach((element) => {
-        this.updateClassFromBindProperty(item, element);
-      });
-    }
+    elements.forEach((element) => {
+      this.updateClassFromBindProperty(element);
+    });
   }
 
-  updateClassFromBindProperty(item, ele) {
+  updateClassFromBindProperty(ele) {
     const attr = ele.getAttribute("md-class");
     if (!attr.startsWith("{")) {
       attr.split(";").forEach((temp) => {
-        temp = temp.split("=").map((temp) => temp.trim());
-        this.addOrRemoveClassFromElement(this.lib, temp[1], temp[0], ele);
+        const tempArr = temp.split("=").map((temp) => temp.trim());
+        temp = temp.substring(temp.indexOf("=") + 1);
+        this.addOrRemoveClassFromElement(temp.trim(), tempArr[0], ele);
       });
     } else {
       const obj = JSON.parse(attr);
       for (let className in obj) {
-        this.addOrRemoveClassFromElement(
-          this.lib,
-          obj[className],
-          className,
-          ele
-        );
+        this.addOrRemoveClassFromElement(obj[className], className, ele);
       }
     }
   }
-  addOrRemoveClassFromElement(item, key, className, ele) {
-    let flag = false;
-    if (key.startsWith("!")) {
-      flag = true;
-      key = key.slice(1);
-    }
-    const val = this.getValueFromkeyWithDot(item, key);
-    if (flag) {
-      if (!val) {
-        ele.classList.add(className);
-      } else {
-        ele.classList.remove(className);
-      }
+  addOrRemoveClassFromElement(key, className, ele) {
+    const func = this.convertStringToFunction(key);
+    if (func()) {
+      ele.classList.add(className);
     } else {
-      if (val) {
-        ele.classList.add(className);
-      } else {
-        ele.classList.remove(className);
-      }
+      ele.classList.remove(className);
     }
   }
 
@@ -186,39 +190,30 @@ class MiniJs {
     try {
       elements.forEach((ele) => {
         let attr = ele.getAttribute("md-if");
-        let arr = attr
-          .replaceAll(/[()]/g, "")
-          .split(/\s(&&|\|\|)\s/)
-          .filter((item, index) => index % 2 == 0)
-          .map((item) => {
-            const temp = item.split(/[\s]*[!]*[=]+[\s]*/);
-            return temp[0]?.[0] != "'" || temp[0]?.[0] != '"' || !isNaN(temp[0])
-              ? temp[0]
-              : temp[1];
-          })
-          .map((item) => {
-            if (item[0] == "!") {
-              item = item.replaceAll("!", "");
-            }
-            let val = this.getValueFromkeyWithDot(this.lib, item);
-            let varName = item;
-            if (item.includes(".")) {
-              varName = "fnVar" + this.randomIntFromInterval(1, 1000);
-              // attr = attr.replaceAll(item, varName);
-              const regexPattern = new RegExp(
-                `(?<!(["'][^"']*${item}[^"']*["']))${item}(?!(["'][^"']*${item}[^"']*["']))`,
-                "g"
-              );
-              attr = attr.replaceAll(regexPattern, varName);
-            }
-            if(isNaN(val)) {
-              return `${varName}='${val}'`;
-            } 
-            return `${varName}=${val}`;
-          });
-        let obj = { temp: "" };
-        console.log(arr);
-        let func = new Function(...arr, `return ${attr}`);
+        // let arr = attr
+        //   .replaceAll(/[\s+()]/g, "")
+        //   .replaceAll(/(&&|\|\|)/g, "__")
+        //   .replaceAll(/(!*)(=+)/g, "__")
+        //   .split('__')
+        //   .filter(item => item[0] != '"' && item[0] != "'" && isNaN(item))
+        //   .map((item) => {
+        //     if (item[0] == "!") {
+        //       item = item.replaceAll("!", "");
+        //     }
+        //     let val = this.getValueFromkeyWithDot(this.lib, item);
+        //     let varName = item;
+        //     if (item.includes(".")) {
+        //       varName = "fnVar" + this.randomIntFromInterval(1, 1000);
+        //       attr = attr.replaceAll(item, varName);
+        //     }
+        //     if(isNaN(val)) {
+        //       return `${varName}='${val}'`;
+        //     }
+        //     return `${varName}=${val}`;
+        //   });
+        // console.log(arr);
+        // let func = new Function(...arr, `return ${attr}`);
+        let func = this.convertStringToFunction(attr);
         const display = ele.getAttribute("md-display") ?? "block";
         if (func()) {
           ele.style.display = display;
@@ -334,19 +329,17 @@ class MiniJs {
   }
 
   modifyMdInputValue(item, ele, flag = false) {
-    if (this.inputFlag) {
-      this.performAllOperationForAllItsChildNodes({
-        flag,
-        item,
-        ele,
-        selector: "md-input",
-        cb: (ele, val) => {
-          ele.value = val;
-          const event = new Event("keyup");
-          ele.dispatchEvent(event);
-        },
-      });
-    }
+    this.performAllOperationForAllItsChildNodes({
+      flag,
+      item,
+      ele,
+      selector: "md-input",
+      cb: (ele, val) => {
+        ele.value = val;
+        const event = new Event("change");
+        ele.dispatchEvent(event);
+      },
+    });
   }
 
   performInputChangeEvent(e) {
@@ -365,14 +358,11 @@ class MiniJs {
     } else {
       obj[targetKey] = e.target.value;
     }
-    this.inputFlag = false;
-    setTimeout(() => {
-      this.inputFlag = true;
-    }, 100);
   }
 
   initInputChanges(data) {
     if (this.container.querySelector("[md-input]")) {
+      this.addFormEventToResetitsValue();
       data.forEach((item) => {
         if (item.property != "length") {
           if (typeof item.newValue == "object") {
@@ -389,6 +379,25 @@ class MiniJs {
         }
       });
     }
+  }
+
+  // //md-form
+  addFormEventToResetitsValue() {
+    const forms = this.container.querySelectorAll("form");
+    forms.forEach(myForm => {
+      myForm.addEventListener("reset", (e) => {
+        const elements = e.target.querySelectorAll("[md-input]");
+        elements.forEach(element => {
+          const attrArr = element.getAttribute("md-input").split(".");
+          const targetKey = attrArr.pop();
+          let obj = this.lib;
+          attrArr.forEach((item) => {
+            obj = obj?.[item];
+          });
+          obj[targetKey] = "";
+        })
+      })
+    })
   }
 
   attachedEventToForm(key) {
