@@ -1,20 +1,26 @@
-class MainClass {
-    list = [{name: "Hi", label: "label1", value: "value1"}, {label: "lable2", value: "value2",name: "Hello"}];
-    key = "Name";
-     flag = false; 
-     nested1 = {nested2: "Test"};
-    task = {taskid: {10: "Some Value"}};
-    name = "Nad";
+class A {
+    key = 'value';
+    get userId() {
+        return 1001;
+    }
+    #name = '';
+    set name(name) {
+        this.#name = name
+    }
+    get name() {
+        return this.#name
+    }
+
+    clickMe(e) {
+        this.name = e.target.value;
+    }
+
     initEvents() {
-        // document.querySelector('#test').addEventListener("keyup", this.fn.bind(this));
-    }
-    fn() {
-        console.log("Hello");
-    }
-    get() {
-        console.log("test");
+        document.getElementById("keyup").addEventListener('keyup', (e) => {
+            this.clickMe(e);
+        }) 
     }
 }
-let obj = new MainClass();
-obj.initEvents();
-obj = MiniJs.create(obj);
+
+const o = MiniJs.create(new A());
+o.initEvents();

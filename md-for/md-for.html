@@ -22,13 +22,22 @@
         <h1>Add to do list</h1>
         <input md-input="todoItem"><br>
         <button id="todolist">Add List</button><br>
-        <!-- <div class="registration">
-            <ul md-for="todoList">
-                <li md-text>
+        <div class="registration">
+            <ul md-for="todoList" md-let="item">
+                <li>
+                  <span md-text="item.id"></span>
+                  <span md-text="item.name"></span>
+                  <span md-text="item.title" ></span>
                 </li>
             </ul>
-        </div> -->
-        
+            <div md-if="!todoList.length">No list found</div>
+        </div>
+        <div md-if="test.users.length">user length</div>
+        <div>newKey <span md-text="newKey"></span></div>
+        <div>testKey.key <span md-text="testKey.key"></span></div>
+        <div>user.newKey <span md-text="user.newKey"></span></div>
+        <div>user.test.newKey <span md-text="user.test.newKey"></span></div>
+        <div>user.test1.newKey1.key <span md-text="user.test1.newKey1.key"></span></div>
         <h1>Add User</h1>
         <label>First Name</label><br>
         <input md-input="user.fname"><br>
@@ -38,11 +47,11 @@
         <input md-input="user.attrVal"><br>
         <button id="addUser">Add User</button><br>
         <div class="registration">
-          <ul md-for="users" md-let="user">
+          <ul md-for="test.users" md-let="user">
               <li>
-                <span style="margin-right: 20px" md-text="fname"></span>
-                <span md-text="lname"></span>
-                <label md-attr="md-text=attrVal"></label>
+                <span style="margin-right: 20px" md-text="user.fname"></span>
+                <span md-text="user.lname"></span>
+                <input md-input="user.inputVal">
               </li>
           </ul>
       </div>

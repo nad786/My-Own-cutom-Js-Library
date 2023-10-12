@@ -23,8 +23,8 @@
         <h1>dynamic to do list</h1>
         <input md-input="todoItem" />
         <button id="todo">Add Item</button>
-        <ul md-for="list">
-          <li md-text></li>
+        <ul md-for="list" md-let="item">
+          <li md-text="item"></li>
         </ul>
 
         <form>
@@ -43,7 +43,7 @@
             md-text="person.email"
           ></span
           ><br />
-          <button type="button" id="clickMe">Click Me</button>
+          <button type="button" id="clickMe" md-text="btn">Click Me</button>
         </form>
         <div md-text="textarea"></div>
       </div>

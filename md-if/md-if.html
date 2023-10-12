@@ -19,15 +19,55 @@
   <body>
     <div class="grid-2">
       <div>
+          <!-- <div md-if="key == 'pkg' || display == 'show'">Test show</div>
+          <div md-if="key != 'pkg' && length == 20">Test Hide</div>
+          <div md-if="key">Test key</div>
+          <div md-if="!key">Test !key</div>
+        <div md-if="arr.length">arr.length</div>
+        <div md-if="!arr.length">!arr.length</div> -->
+        <div md-if="!!arr.length || obj.key == 'showing' || userName == 'userName'">obj.key == 'show' nadeem</div>
+        <div md-if="!arr.length || obj.key !='show' || userName == 'userName'">obj.key != 'show' ujjwal</div>
+        <!-- <div md-if="flag || display">flag</div>
+        <div md-if="!flag || display">!flag</div> -->
+      </div>
+      <!-- <div>
             <h1>Hide and show Element with condition</h1>
           <button id="toggle">Toggle</button>
           <div md-if="display">First Element Show when display is true</div>
           <div md-if="!display">Second Element Show when display is false</div>
-      </div>
+
+          <button id="toggle-key">Toggle key == test</button>
+          <div md-if="key == 'test'">key == test</div>
+          <div md-if="key != 'test'">key != test</div>
+          
+          <button id="toggle-test-key">Toggle tes.key == test</button>
+          <div md-if="test.key == 'test'">test.key == test</div>
+          <div md-if="test.key != 'test'">test.key != test</div>
+
+          <button id="toggle-num">Toggle num == 10</button>
+          <div md-if="num == 10">num == 10</div>
+          <div md-if="num != 10">num != 10</div>
+      </div> -->
       <div>
         <h1>Js code for the same</h1>
         <pre>
-const instance = MiniJs.create({display: true});
+const instance = MiniJs.create({
+    display: true, 
+    key: "test1",
+    test: {key: "test1"},
+    num: 101
+});
+
+
+document.getElementById("toggle-key").addEventListener("click", (e) => {
+    instance.key = instance.key == 'test' ? "someother" : "test";
+})
+document.getElementById("toggle-test-key").addEventListener("click", (e) => {
+    instance.test.key = instance.test.key == 'test' ? "someother" : "test";
+})
+document.getElementById("toggle-num").addEventListener("click", (e) => {
+    instance.num = instance.num == 10 ? 11 : 10;
+})
 document.getElementById("toggle").addEventListener("click", (e) => {
     instance.display = !instance.display;
 })

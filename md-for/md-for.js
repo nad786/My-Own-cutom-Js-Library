@@ -1,11 +1,19 @@
+console.time('start');
+console.log('start');
+let list = [];
+for(let i=0;i<10;i++) {
+    list.push({name: "Nad", id: i, title: "Nad "+i});
+}
 const instance = MiniJs.create({
-    todoList: ["first list"],
+    todoList: list,
     todoItem: "",
-    users: [{fname: "john", lname: "doe", attrVal: "name"}],
+    test : {users: [{fname: "john", lname: "doe", inputVal: "tesing", attrVal: "attr value"}]},
     user: {fname: "", lname: "", attrVal: ""},
-    name: "Nad"
+    name: "Nad",
+    
 
-}, {target: 'loop'})
+})
+console.timeEnd('start');
 document.getElementById("todolist").addEventListener("click", (e) => {
     if(instance.todoItem) {
         instance.todoList.push(instance.todoItem);
@@ -13,6 +21,6 @@ document.getElementById("todolist").addEventListener("click", (e) => {
 });
 document.getElementById("addUser").addEventListener("click", (e) => {
     if(instance.user.fname) {
-        instance.users.push(instance.user);
+        instance.test.users.push(instance.user);
     }
 })

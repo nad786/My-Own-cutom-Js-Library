@@ -6,38 +6,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <link href="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.css" rel="stylesheet">
+ 
+<script src="https://cdn.datatables.net/v/dt/dt-1.13.6/datatables.min.js"></script>
+
     <script src="../plugin/observable-slim.js"></script>
     <script src="../js/MiniJs.js"></script>
     <script src="script.js" defer></script>
+    <script>
+      console.time('load');
+    </script>
   </head>
   <body>
-    <div class="container">
-        <ul md-for="list">
-            <li><div md-text="label" md-attr="data-id=label"></div><span md-text="value"></span>
-                <li>
+    <!-- <div class="container">
+        <ul md-for="list" md-let="item">
+            <li>
+             
+                <a md-text="item.title"></a>
+                <a md-text="item.price"></a>
+                <a md-text="item.stock"></a>
+                <a md-text="item.brand"></a>
+                <a md-text="item.rating"></a>
+            </li>
+           
         </ul>
-        <div md-for="listArr.list">
-                <label md-text="keyName"></label>
-        </div>
-        <h3 md-text="key"></h3>
-        <h3 md-text="nested1.nested2">Hide/ show Element</h3> 
-        <h3 md-text="nested1.nested2">Hide/ show Element with not</h3> 
-            <input md-input="nested1.nested2" md-attr="data-id = nested1.nested2">
-            <h3 md-text="nested1.nested2"></h3>
-    </div>
-
+        <a md-if="!users.length">No Users</a>
+    </div> -->
    
-    <input md-input="name" md-attr="data-id=name">
-    <div md-text="name"></div>
-    <div md-for="persons">
-      <div md-for="hobby">
-        <div>
-          <label>Hello</label>
-          <span md-text="name"></span>
-        </div>
-      </div>
-    </div>
-    <div md-text="task.taskid.10"></div>
-
+    <!-- <ul id="test">
+      
+    </ul>
+    <ul md-for="list" md-let="item">
+      <li  md-text="item.title"></li>
+    </ul> -->
+    <label>UserName</label>
+    <input id="keyup" type="text" md-input="#name">
+    <div md-text="#name"></div>
   </body>
-</html>
+</html> 
