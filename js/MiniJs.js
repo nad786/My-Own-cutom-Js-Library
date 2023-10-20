@@ -4,7 +4,7 @@ class MiniJs {
   listContainer = {};
   container = document;
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", target = null } = rest;
+    const { parentSelector = "html"} = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
   }
@@ -214,7 +214,7 @@ class MiniJs {
         // console.log(arr);
         // let func = new Function(...arr, `return ${attr}`);
         let func = this.convertStringToFunction(attr);
-        const display = ele.getAttribute("md-display") ?? "block";
+        const display = ele.getAttribute("md-display") ?? "initial";
         if (func()) {
           ele.style.display = display;
         } else {
@@ -693,7 +693,7 @@ class MiniJs {
   addAllAttributeToChildren(selector, item, ele, varName) {
     const attr = ele.getAttribute(selector);
     if (attr) {
-      if (attr.startsWith(varName + ".") || attr == varName) {
+      if ((attr.startsWith(varName + ".") || attr == varName) || (selector == 'md-if' && (attr.startsWith("!"+varName + ".") || attr == varName))) {
         ele.setAttribute(selector, attr.replace(varName, item.currentPath));
       }
     }
@@ -798,5 +798,14 @@ class MiniJs {
     const instance = new MiniJs(obj, rest);
     instance.init(obj);
     return instance.lib;
+  }
+
+  static formValidation({selector, obj}) {
+    const form = document.querySelector(selector);
+    if(form) {
+      form.addEventListener("change", (e) => {
+  
+      })
+    }
   }
 }
