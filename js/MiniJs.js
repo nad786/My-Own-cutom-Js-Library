@@ -4,7 +4,7 @@ class MiniJs {
   listContainer = {};
   container = document;
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", target = null } = rest;
+    const { parentSelector = "html"} = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
   }
@@ -214,7 +214,7 @@ class MiniJs {
         // console.log(arr);
         // let func = new Function(...arr, `return ${attr}`);
         let func = this.convertStringToFunction(attr);
-        const display = ele.getAttribute("md-display") ?? "block";
+        const display = ele.getAttribute("md-display") ?? "initial";
         if (func()) {
           ele.style.display = display;
         } else {
@@ -423,6 +423,12 @@ class MiniJs {
             "change",
             this.performInputChangeEvent.bind(this)
           );
+
+          if(element.tagName == 'SELECT' && typeof jQuery != 'undefined') {
+            jQuery(this.container).on("select2:select", element, (e) => {
+              this.performInputChangeEvent(e);
+            })
+          }
         }
       });
     }
@@ -687,8 +693,10 @@ class MiniJs {
   addAllAttributeToChildren(selector, item, ele, varName) {
     const attr = ele.getAttribute(selector);
     if (attr) {
-      if (attr.startsWith(varName + ".") || attr == varName) {
+      if(attr == varName) {
         ele.setAttribute(selector, attr.replace(varName, item.currentPath));
+      } else if ((attr.startsWith(varName + ".")) || (selector == 'md-if' && (attr.startsWith("!"+varName + ".")))) {
+        ele.setAttribute(selector, attr.replaceAll(varName + ".", item.currentPath + "."));
       }
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
@@ -792,5 +800,14 @@ class MiniJs {
     const instance = new MiniJs(obj, rest);
     instance.init(obj);
     return instance.lib;
+  }
+
+  static formValidation({selector, obj}) {
+    const form = document.querySelector(selector);
+    if(form) {
+      form.addEventListener("change", (e) => {
+  
+      })
+    }
   }
 }
