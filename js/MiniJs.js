@@ -5,7 +5,7 @@ class MiniJs {
   listContainer = {};
   container = document;
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", prefix = 'nad-'} = rest;
+    const { parentSelector = "html", prefix = 'md-'} = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.prefix = prefix;
