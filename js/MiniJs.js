@@ -693,8 +693,10 @@ class MiniJs {
   addAllAttributeToChildren(selector, item, ele, varName) {
     const attr = ele.getAttribute(selector);
     if (attr) {
-      if ((attr.startsWith(varName + ".") || attr == varName) || (selector == 'md-if' && (attr.startsWith("!"+varName + ".") || attr == varName))) {
+      if(attr == varName) {
         ele.setAttribute(selector, attr.replace(varName, item.currentPath));
+      } else if ((attr.startsWith(varName + ".")) || (selector == 'md-if' && (attr.startsWith("!"+varName + ".")))) {
+        ele.setAttribute(selector, attr.replaceAll(varName + ".", item.currentPath + "."));
       }
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
