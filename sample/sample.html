@@ -21,39 +21,48 @@
   </head>
   <body>
     <!-- <div class="container">
-        <ul md-for="list" md-let="item">
+        <ul nad-for="list" nad-let="item">
             <li>
              
-                <a md-text="item.title"></a>
-                <a md-text="item.price"></a>
-                <a md-text="item.stock"></a>
-                <a md-text="item.brand"></a>
-                <a md-text="item.rating"></a>
+                <a nad-text="item.title"></a>
+                <a nad-text="item.price"></a>
+                <a nad-text="item.stock"></a>
+                <a nad-text="item.brand"></a>
+                <a nad-text="item.rating"></a>
             </li>
            
         </ul>
-        <a md-if="!users.length">No Users</a>
+        <a nad-if="!users.length">No Users</a>
     </div> -->
    
     <!-- <ul id="test">
       
     </ul>
-    <ul md-for="list" md-let="item">
-      <li  md-text="item.title"></li>
+    <ul nad-for="list" nad-let="item">
+      <li  nad-text="item.title"></li>
     </ul> -->
     <!-- <label>UserName</label>
-    <input id="keyup" type="text" md-input="#name">
-    <div md-text="#name"></div> -->
-      <form action="">
-        <select md-input="num" id="selectCommand">
+    <input id="keyup" type="text" nad-input="#name">
+    <div nad-text="#name"></div> -->
+      <!-- <form id="myForm">
+        <label>User Name</label>
+        <input required maxlength="10" minlength="3">
+        <select required nad-input="num" id="selectCommand">
+          <option value="">Select</option>
           <option>1</option>
           <option>2</option>
           <option>4</option>
           <option>5</option>
-        </select>
-      </form>
+        </select> 
+      </form> -->
+
+      <div nadeem-for="list" nadeem-let="item">
+        <div><span nadeem-text="item.val" nadeem-if="item.val" nadeem-display="">Test</span><span nadeem-if="item.val != 'Hi'">Nothing</span></div>
+      </div>
+      <input nadeem-input="username">
+      <div nadeem-text="username"></div>
     <script>
-      $("#selectCommand").select2({})
+      // $("#selectCommand").select2({});
     </script>
   </body>
 </html> 
