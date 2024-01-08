@@ -51,6 +51,29 @@ class MiniJs {
     this.initInputChanges(data);
   }
 
+  initClassAndAttributeValue() {
+    this.container.querySelectorAll();
+      // if (this.container.querySelector(`[${this.prefix}input]`)) {
+      //   this.addFormEventToResetitsValue();
+      //   data.forEach((item) => {
+      //     if (item.property != "length") {
+      //       if (typeof item.newValue == "object") {
+      //         const mainKey = item.currentPath;
+      //         const objKeys = this.generateKeyWithDotSeperated(item.newValue);
+      //         objKeys.forEach((key) => {
+      //           const keyForEvent = `${mainKey}.${key}`;
+      //           this.attachedEventToForm(keyForEvent);
+      //         });
+      //       } else {
+      //         const key = item.currentPath;
+      //         this.attachedEventToForm(key);
+      //       }
+      //     }
+      //   });
+      // }
+    
+  }
+
   convertStringToFunction(str) {
     const arr = str
       .replaceAll(/[\s+()]/g, "")
@@ -140,7 +163,8 @@ class MiniJs {
       attr.split(";").forEach((temp) => {
         const tempArr = temp.split("=").map((temp) => temp.trim());
         temp = temp.substring(temp.indexOf("=") + 1);
-        this.addOrRemoveClassFromElement(temp.trim(), tempArr[0], ele);
+        const className = this.removeQuoteAndDoubleQuote(tempArr[0]);
+        this.addOrRemoveClassFromElement(temp.trim(), className, ele);
       });
     } else {
       const obj = JSON.parse(attr);
@@ -149,6 +173,11 @@ class MiniJs {
       }
     }
   }
+
+  removeQuoteAndDoubleQuote(str) {
+    return str.replace(/['"]+/g, '')
+  }
+
   addOrRemoveClassFromElement(key, className, ele) {
     const func = this.convertStringToFunction(key);
     if (func()) {
@@ -171,15 +200,16 @@ class MiniJs {
   }
 
   updateAttributeValueForAttr(item, element, key = "") {
-    const multiAttr = element.getAttribute(`${prefix}attr`).split(";");
+    const multiAttr = element.getAttribute(`${this.prefix}attr`).split(";");
     multiAttr.forEach((singleAttr) => {
       const attr = singleAttr.split("=").map((item) => item.trim());
-      const val = this.getValueFromkeyWithDot(
+      let val = this.getValueFromkeyWithDot(
         key ? item.newValue : this.lib,
         key ? key : attr[1]
       );
       if (val) {
-        element.setAttribute(attr[0], val);
+        const attrName = this.removeQuoteAndDoubleQuote(attr[0]);
+        element.setAttribute(attrName, val);
       }
     });
   }
