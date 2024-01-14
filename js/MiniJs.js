@@ -1,11 +1,12 @@
 class MiniJs {
-  prefix = ''
+  prefix = "";
   elements = [];
   listElements = {};
   listContainer = {};
   container = document;
+  allKey = [];
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", prefix = 'md-'} = rest;
+    const { parentSelector = "html", prefix = "md-" } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.prefix = prefix;
@@ -40,12 +41,14 @@ class MiniJs {
       this.performOperation(data);
     }
   }
-  
 
   //common Operation
   init(obj) {
     // this.mappedActionForPerformance(obj);
     const data = this.generateDefaultObjectType(obj);
+    data.forEach((item) => {
+      this.allKey.push(item.currentPath);
+    });
     this.initForLoop(obj);
     this.performOperation(data);
     this.initInputChanges(data);
@@ -53,25 +56,24 @@ class MiniJs {
 
   initClassAndAttributeValue() {
     this.container.querySelectorAll();
-      // if (this.container.querySelector(`[${this.prefix}input]`)) {
-      //   this.addFormEventToResetitsValue();
-      //   data.forEach((item) => {
-      //     if (item.property != "length") {
-      //       if (typeof item.newValue == "object") {
-      //         const mainKey = item.currentPath;
-      //         const objKeys = this.generateKeyWithDotSeperated(item.newValue);
-      //         objKeys.forEach((key) => {
-      //           const keyForEvent = `${mainKey}.${key}`;
-      //           this.attachedEventToForm(keyForEvent);
-      //         });
-      //       } else {
-      //         const key = item.currentPath;
-      //         this.attachedEventToForm(key);
-      //       }
-      //     }
-      //   });
-      // }
-    
+    // if (this.container.querySelector(`[${this.prefix}input]`)) {
+    //   this.addFormEventToResetitsValue();
+    //   data.forEach((item) => {
+    //     if (item.property != "length") {
+    //       if (typeof item.newValue == "object") {
+    //         const mainKey = item.currentPath;
+    //         const objKeys = this.generateKeyWithDotSeperated(item.newValue);
+    //         objKeys.forEach((key) => {
+    //           const keyForEvent = `${mainKey}.${key}`;
+    //           this.attachedEventToForm(keyForEvent);
+    //         });
+    //       } else {
+    //         const key = item.currentPath;
+    //         this.attachedEventToForm(key);
+    //       }
+    //     }
+    //   });
+    // }
   }
 
   convertStringToFunction(str) {
@@ -175,7 +177,7 @@ class MiniJs {
   }
 
   removeQuoteAndDoubleQuote(str) {
-    return str.replace(/['"]+/g, '')
+    return str.replace(/['"]+/g, "");
   }
 
   addOrRemoveClassFromElement(key, className, ele) {
@@ -290,7 +292,7 @@ class MiniJs {
   //text opeartion
   performTextOperation(item) {
     const elements = this.container.querySelectorAll(
-      `[${this.prefix}text="${item.currentPath}"]`
+      `[${this.prefix}text*="${item.currentPath}"]`
     );
     if (elements.length) {
       elements.forEach((element) => {
@@ -300,15 +302,31 @@ class MiniJs {
   }
 
   modifyMdTextValue(item, ele, flag = false) {
-    this.performAllOperationForAllItsChildNodes({
-      flag,
-      item,
-      ele,
-      selector: `${this.prefix}text`,
-      cb: (ele, val) => {
-        ele.textContent = val;
-      },
+    let attr = ele.getAttribute(`${this.prefix}text`);
+    let val;
+    if (attr == item.currentPath) {
+      val = this.getValueFromkeyWithDot(this.lib, attr);
+
+    } else {
+      val = this.replaceAllKeyToValueWithRegex(attr, [item.currentPath]);
+      if (val.includes("{{")) {
+        val = this.replaceAllKeyToValueWithRegex(val, this.allKey);
+      }
+    }
+
+    ele.textContent = val;
+  }
+
+  replaceAllKeyToValueWithRegex(val, allKey = []) {
+    allKey.forEach(key => {
+      const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
+      if(regex.exec(val)) {
+        val = val.replace(regex, (match, variable) => {
+          return this.getValueFromkeyWithDot(this.lib, key) || match;
+        });
+      }
     });
+    return val;
   }
 
   //input opeartion
@@ -397,24 +415,28 @@ class MiniJs {
   // //nad-form
   addFormEventToResetitsValue() {
     const forms = this.container.querySelectorAll("form");
-    forms.forEach(myForm => {
+    forms.forEach((myForm) => {
       myForm.addEventListener("reset", (e) => {
         const elements = e.target.querySelectorAll(`[${this.prefix}input]`);
-        elements.forEach(element => {
-          const attrArr = element.getAttribute(`${this.prefix}input`).split(".");
+        elements.forEach((element) => {
+          const attrArr = element
+            .getAttribute(`${this.prefix}input`)
+            .split(".");
           const targetKey = attrArr.pop();
           let obj = this.lib;
           attrArr.forEach((item) => {
             obj = obj?.[item];
           });
           obj[targetKey] = "";
-        })
-      })
-    })
+        });
+      });
+    });
   }
 
   attachedEventToForm(key) {
-    const elements = this.container.querySelectorAll(`[${this.prefix}input="${key}"]`);
+    const elements = this.container.querySelectorAll(
+      `[${this.prefix}input="${key}"]`
+    );
     if (elements.length) {
       elements.forEach((element) => {
         const typeattr = element.getAttribute("type");
@@ -437,10 +459,10 @@ class MiniJs {
             this.performInputChangeEvent.bind(this)
           );
 
-          if(element.tagName == 'SELECT' && typeof jQuery != 'undefined') {
+          if (element.tagName == "SELECT" && typeof jQuery != "undefined") {
             jQuery(this.container).on("select2:select", element, (e) => {
               this.performInputChangeEvent(e);
-            })
+            });
           }
         }
       });
@@ -650,8 +672,20 @@ class MiniJs {
     this.addAllAttributeToChildren(`${this.prefix}text`, item, ele, varName);
     this.addAllAttributeToChildren(`${this.prefix}if`, item, ele, varName);
     this.addAllAttributeToChildren(`${this.prefix}input`, item, ele, varName);
-    this.addAttrClassToChildred(`${this.prefix}attr`, item, ele, varName, allNestedKeys);
-    this.addAttrClassToChildred(`${this.prefix}class`, item, ele, varName, allNestedKeys);
+    this.addAttrClassToChildred(
+      `${this.prefix}attr`,
+      item,
+      ele,
+      varName,
+      allNestedKeys
+    );
+    this.addAttrClassToChildred(
+      `${this.prefix}class`,
+      item,
+      ele,
+      varName,
+      allNestedKeys
+    );
     const mainObj = { ...this.lib };
     allNestedKeys.forEach((currentKey) => {
       const obj = {
@@ -691,10 +725,16 @@ class MiniJs {
   addAllAttributeToChildren(selector, item, ele, varName) {
     const attr = ele.getAttribute(selector);
     if (attr) {
-      if(attr == varName) {
+      if (attr == varName) {
         ele.setAttribute(selector, attr.replace(varName, item.currentPath));
-      } else if ((attr.startsWith(varName + ".")) || (selector == `${this.prefix}if` && (attr.startsWith("!"+varName + ".")))) {
-        ele.setAttribute(selector, attr.replaceAll(varName + ".", item.currentPath + "."));
+      } else if (
+        attr.startsWith(varName + ".") ||
+        (selector == `${this.prefix}if` && attr.startsWith("!" + varName + "."))
+      ) {
+        ele.setAttribute(
+          selector,
+          attr.replaceAll(varName + ".", item.currentPath + ".")
+        );
       }
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
@@ -728,7 +768,10 @@ class MiniJs {
     const attr = ele.getAttribute(`${this.prefix}for`);
     if (attr) {
       if (attr.startsWith(varName + ".")) {
-        ele.setAttribute(`${this.prefix}for`, attr.replace(varName, item.currentPath));
+        ele.setAttribute(
+          `${this.prefix}for`,
+          attr.replace(varName, item.currentPath)
+        );
       }
       const values = this.getValueFromkeyWithDot(this.lib, key);
       const defaultNestedValues = this.generateDefaultObjectType(values);
@@ -736,9 +779,21 @@ class MiniJs {
       ele.removeChild(ele.firstElementChild);
       defaultNestedValues.forEach((element) => {
         const clon = node.cloneNode(true);
-        this.addNestedLoopAttribute(clon, `${this.prefix}text`, element.currentPath);
-        this.addNestedLoopAttribute(clon, `${this.prefix}input`, element.currentPath);
-        this.addNestedLoopAttribute(clon, `${this.prefix}if`, element.currentPath);
+        this.addNestedLoopAttribute(
+          clon,
+          `${this.prefix}text`,
+          element.currentPath
+        );
+        this.addNestedLoopAttribute(
+          clon,
+          `${this.prefix}input`,
+          element.currentPath
+        );
+        this.addNestedLoopAttribute(
+          clon,
+          `${this.prefix}if`,
+          element.currentPath
+        );
         ele.appendChild(clon);
       });
     } else {
@@ -800,12 +855,10 @@ class MiniJs {
     return instance.lib;
   }
 
-  static formValidation({selector, obj}) {
+  static formValidation({ selector, obj }) {
     const form = document.querySelector(selector);
-    if(form) {
-      form.addEventListener("change", (e) => {
-  
-      })
+    if (form) {
+      form.addEventListener("change", (e) => {});
     }
   }
 }

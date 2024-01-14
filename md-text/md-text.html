@@ -11,7 +11,7 @@
     <style>
       .grid-2 {
         display: grid;
-        grid-template-columns: 200px 1fr;
+        grid-template-columns: 300px 1fr;
         gap: 20px;
       }
     </style>
@@ -19,18 +19,18 @@
   <body>
     <div class="grid-2">
         <div>
-            <h1 md-text="header1"></h1>
+            <h1 md-text="Hi {{header1}} {{header2}}"></h1>
             <h2 md-text="header2"></h2>
-            <h3 md-text="header3"></h3>
-            <h4 md-text="header4"></h4>
+            <h3 md-text="Hi {{header3}}"></h3>
+            <h4 md-text="Hi {{header4}}"></h4>
         </div>
       <div>
         <h1>Html code for same</h1>
         <pre>
-&#60;h1 md-text="header1"/>
-&#60;h2 md-text="header2"/>
-&#60;h3 md-text="header3"/>
-&#60;h4 md-text="header4"/>
+&#60;h1 md-text="Hi {{header1}} {{header2}}"></h1>
+&#60;h2 md-text="header2"></h2>
+&#60;h3 md-text="Hi {{header3}}"></h3>
+&#60;h4 md-text="Hi {{header4}}"></h4>
         </pre>
         <h1>Js code for the same</h1>
         <pre>
