@@ -7,7 +7,8 @@
     <title>Example of Loop</title>
     <script src="../plugin/observable-slim.js"></script>
     <script src="../js/MiniJs.js"></script>
-    <script src="md-input.js" defer></script>
+    <script src="../js/MiniJsForm.js"></script>
+    <script src="form.js" defer></script>
     <style>
       .grid-2 {
         display: grid;
@@ -19,38 +20,35 @@
   <body>
     <div class="grid-2">
         <div class="registration">
-            <form id="my-form">
-              <div class="form-group">
-                <label for="fname">First name:</label><br>
-                <input type="text" class="form-control" required md-input="person.fname"><br>
-                <div md-text="person.fname"></div>
-                <span class="error"></span>
-              </div>
-              <div class="form-group">
-                <label for="lname">Last name:</label><br>
-                <input type="text" class="form-control" required md-input="person.lname"><br>
-                <div md-text="person.lname"></div>
-                <span class="error"></span>
+            <form id="my-form" formGroup="myForm">
+              <div class="form-group" formGroup="nameGroup" >
+                <label for="fname">Name:</label><br>
+                <input formControlName="name" type="text" class="form-control" required><br>
+                <div md-text="myForm.controls.name.valid"></div>
+                <span md-if="!myForm.controls.name.valid">Custom Error</span>
+                <span md-text="myForm.controls.name.errors.0.error"></span>
               </div>
               <div class="form-group">
                 <label for="Email">Email</label><br>
-                <input pattern="[^\s@]+@[^\s@]+\.[^\s@]+" type="text" class="form-control" md-input="person.email"><br>
-                <div md-text="person.email"></div>
-                <span class="error"></span>
+                <input formControlName="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" type="text" class="form-control" md-input="person.email"><br>
+                <div md-text="myForm.controls.email.valid"></div>
+                <span md-text="myForm.controls.email.error"></span>
               </div>
-                <div class="form-group">
+                <!-- <div class="form-group">
                   <input type="checkbox" name="hobby" md-input="person.hobbies.0" value="online"><label>Onine Game</label><br>
                   <input type="checkbox" name="hobby" md-input="person.hobbies.1" value="ofline"><label>Offline Game</label><br>
-                </div>
+                </div> -->
                
-                <input type="radio" name="gender" md-input="person.gender" value="female"><input type="radio" name="gender" md-input="person.gender" value="male"><br><div md-text="person.gender"></div>
-                <select md-input="person.group">
-                  <option>Select</option>
+                <!-- <input type="radio" name="gender" md-input="person.gender" value="female"><input type="radio" name="gender" md-input="person.gender" value="male"><br><div md-text="person.gender"></div> -->
+                <select formControlName="group" md-input="person.group">
+                  <option value="">Select</option>
                   <option>1</option>
                   <option>2</option>
                   <option>4</option>
                   <option>5</option>
-                </select><div md-text="person.group"></div>
+                </select>
+                <div md-text="myForm.controls.group.valid"></div>
+                <span md-text="myForm.controls.group.error"></span>
                 <button id="submit" type="button">Submit</button>
               </form>
               <div md-text="outputPayload"></div>

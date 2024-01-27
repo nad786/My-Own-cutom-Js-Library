@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Window without Toolbars</title>
+  <script>
+    function openChildWindow() {
+      const childInstance = window.open('child.html', 'ChildWindow', "resizable=no, scrollbars=no, status=no, toolbar=no");
+      childInstance.onload = function() {
+        childInstance.postMessage([1,2,3], "*")
+      }
+    }
+    window.sendDataToParent = function(event) {
+      console.log("Recived data from child", event)
+    }
+  </script>
+</head>
+<body>
+  <button onclick="openChildWindow()">Open Child Window</button>
+</body>
+</html>

@@ -319,11 +319,13 @@ class MiniJs {
 
   replaceAllKeyToValueWithRegex(val, allKey = []) {
     allKey.forEach(key => {
-      const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
-      if(regex.exec(val)) {
-        val = val.replace(regex, (match, variable) => {
-          return this.getValueFromkeyWithDot(this.lib, key) || match;
-        });
+      if(key) {
+        const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
+        if(regex.exec(val)) {
+          val = val.replace(regex, (match, variable) => {
+            return this.getValueFromkeyWithDot(this.lib, key) || match;
+          });
+        }
       }
     });
     return val;
@@ -855,10 +857,5 @@ class MiniJs {
     return instance.lib;
   }
 
-  static formValidation({ selector, obj }) {
-    const form = document.querySelector(selector);
-    if (form) {
-      form.addEventListener("change", (e) => {});
-    }
-  }
+  
 }

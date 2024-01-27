@@ -1,0 +1,30 @@
+<!-- child.html (child window) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Child Window</title>
+  <script>
+    // Access the parent window using window.opener
+    var parentWindow = window.opener;
+
+    // You can do something with the parent window, if needed
+    console.log('Parent window URL from child:', parentWindow.location.href);
+
+
+    window.addEventListener('message', (event) => {
+      console.log("Recived data from parent ", event);
+    }, false);
+
+
+
+    window.addEventListener("beforeunload", () => {
+            window.opener.sendDataToParent({msg: "data from child"});
+      });
+  </script>
+</head>
+<body>
+  <h1>Child Window</h1>
+</body>
+</html>
