@@ -51,13 +51,15 @@ class MiniJsFormValidaion {
   form = null;
   prefix = "md-";
   formObjReplicateWithControls = {};
-  constructor({ prefix = "md-", selector = "form" }) {
+  formObj = {};
+  constructor({ prefix = "md-", selector = "form" } = {}) {
     this.prefix = prefix;
     this.form = document.querySelector(selector);
   }
 
   buildControls(formControls = {}, options = {}) {
     const objKey = this.form.getAttribute("formGroup");
+    this.objKey = objKey;
     let formObj = {
       [objKey]: {
         controls: {},
@@ -84,6 +86,7 @@ class MiniJsFormValidaion {
         `${objKey}.controls.${key}.value`
       );
       ele.value = formControls[key]?.value;
+      this.updateTouchedProp(ele, key);
 
       this.formValidation(formControls[key].validators, formObj[objKey].controls[key], ele)
 
@@ -112,10 +115,11 @@ class MiniJsFormValidaion {
       const ele = this.form.querySelector(
         `[${this.prefix}input="${item.currentPath}"]`
       );
-
+      
       if (validators?.length && ele) {
         this.formValidation(validators, realObj, ele);
       }
+     
     });
   }
 
@@ -171,7 +175,7 @@ class MiniJsFormValidaion {
             }
           }
           if(cbResponse.error) {
-            ele.setCustomValidity(cbResponse?.msg);
+            ele.setCustomValidity(cbResponse?.msg ? cbResponse?.msg: "Error");
             error = true;
             targetObj.valid = false;
             targetObj.error = cbResponse?.msg;
@@ -183,6 +187,19 @@ class MiniJsFormValidaion {
       targetObj.valid = true;
       targetObj.error = "";
     }
+
+    try {
+      const objKey = this.form.getAttribute("formGroup")
+      this.formObj[objKey].valid = this.form.checkValidity();
+    } catch {
+
+    }
+  }
+
+  updateTouchedProp(ele, key) {
+    ele.addEventListener("focus", (e) => {
+      this.formObj[this.objKey].controls[key].touched = true;
+    })
   }
 
   createMiniJSObj(obj, rest) {
@@ -190,10 +207,17 @@ class MiniJsFormValidaion {
     this.miniJSInstance.init(obj);
   }
 
-  static buildForm(obj, options = {}) {
-    const instance = new MiniJsFormValidaion(options);
-    const formObj = instance.buildControls(obj, options);
+  getValues() {
+    const formKey = this.form.getAttribute("formGroup");
+    const result = {};
+    for(let key in this.formObj[formKey].controls) {
+      result[key] = this.formObj[formKey].controls[key].value;
+    }
+    return result;
+  }
 
-    return formObj;
+  buildForm(obj, options = {}) {
+    // const instance = new MiniJsFormValidaion(options);
+    this.formObj = this.buildControls(obj, options);
   }
 }

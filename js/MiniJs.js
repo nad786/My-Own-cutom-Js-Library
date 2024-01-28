@@ -134,6 +134,36 @@ class MiniJs {
     }
   }
 
+
+  replaceAllKeyToValueWithRegex(attr) {
+  
+    const matches = this.getAllKeyFromAttrWithBraces(attr);
+    matches.forEach(key => {
+      if(key) {
+        const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
+        if(regex.exec(attr)) {
+          attr = attr.replace(regex, (match, variable) => {
+            const result = this.getValueFromkeyWithDot(this.lib, key)
+            return (result || result ==0 ) ? result : "";
+          });
+        }
+      }
+    });
+    return attr;
+  }
+
+
+  getAllKeyFromAttrWithBraces(attr) {
+    const pattern = /\{\{(.+?)\}\}/g;
+    let matches = [];
+    let match;
+    while ((match = pattern.exec(attr)) !== null) {
+      matches.push(match[1]);
+    }
+    return matches;
+  }
+
+
   //perform all all operation based on action mapper
   performOperation(data) {
     data.forEach((item) => {
@@ -143,10 +173,27 @@ class MiniJs {
         this.performAttributeAddOpeartaion(item, key);
         this.performTextOperation(item, key);
         this.performInputOperation(item, key);
+        this.performDisabledValue(item)
       }
       this.performClassOpeartion(item, key);
       this.performIfStatementOperation(item, key);
     });
+  }
+
+  //md-disabled
+  performDisabledValue(item) {
+    const elements = this.container.querySelectorAll(
+      `[${this.prefix}enabled="${item.currentPath}"]`
+    );
+    elements.forEach((element) => {
+      if(this.getValueFromkeyWithDot(this.lib, item.currentPath)) {
+        element.disabled = false;
+      } else {
+        element.disabled = true;
+      }
+    });
+
+
   }
 
   //class operation
@@ -321,34 +368,6 @@ class MiniJs {
     }
 
     ele.textContent = val;
-  }
-
-  replaceAllKeyToValueWithRegex(attr) {
-  
-    const matches = this.getAllKeyFromAttrWithBraces(attr);
-    matches.forEach(key => {
-      if(key) {
-        const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
-        if(regex.exec(attr)) {
-          attr = attr.replace(regex, (match, variable) => {
-            const result = this.getValueFromkeyWithDot(this.lib, key)
-            return (result || result ==0 ) ? result : match;
-          });
-        }
-      }
-    });
-    return attr;
-  }
-
-
-  getAllKeyFromAttrWithBraces(attr) {
-    const pattern = /\{\{(.+?)\}\}/g;
-    let matches = [];
-    let match;
-    while ((match = pattern.exec(attr)) !== null) {
-      matches.push(match[1]);
-    }
-    return matches;
   }
 
   //input opeartion
