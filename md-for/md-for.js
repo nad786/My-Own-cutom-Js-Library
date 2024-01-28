@@ -9,9 +9,6 @@ const instance = MiniJs.create({
     todoItem: "",
     test : {users: [{fname: "john", lname: "doe", inputVal: "tesing", attrVal: "attr value"}]},
     user: {fname: "", lname: "", attrVal: ""},
-    name: "Nad",
-    
-
 })
 console.timeEnd('start');
 document.getElementById("todolist").addEventListener("click", (e) => {

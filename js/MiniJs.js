@@ -303,32 +303,52 @@ class MiniJs {
 
   modifyMdTextValue(item, ele, flag = false) {
     let attr = ele.getAttribute(`${this.prefix}text`);
+    if(!attr) {
+      const elements = ele.querySelectorAll(`[${this.prefix}text]`);
+      elements.forEach(element => {
+        this.modifyMdTextValue(item, element, flag);
+      });
+      return;
+    }
     let val;
     if (attr == item.currentPath) {
       val = this.getValueFromkeyWithDot(this.lib, attr);
 
+    } else if (!flag && attr?.includes("{{")) {
+        val = this.replaceAllKeyToValueWithRegex(attr, this.allKey);
     } else {
-      val = this.replaceAllKeyToValueWithRegex(attr, [item.currentPath]);
-      if (val.includes("{{")) {
-        val = this.replaceAllKeyToValueWithRegex(val, this.allKey);
-      }
+      return;
     }
 
     ele.textContent = val;
   }
 
-  replaceAllKeyToValueWithRegex(val, allKey = []) {
-    allKey.forEach(key => {
+  replaceAllKeyToValueWithRegex(attr) {
+  
+    const matches = this.getAllKeyFromAttrWithBraces(attr);
+    matches.forEach(key => {
       if(key) {
         const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
-        if(regex.exec(val)) {
-          val = val.replace(regex, (match, variable) => {
-            return this.getValueFromkeyWithDot(this.lib, key) || match;
+        if(regex.exec(attr)) {
+          attr = attr.replace(regex, (match, variable) => {
+            const result = this.getValueFromkeyWithDot(this.lib, key)
+            return (result || result ==0 ) ? result : match;
           });
         }
       }
     });
-    return val;
+    return attr;
+  }
+
+
+  getAllKeyFromAttrWithBraces(attr) {
+    const pattern = /\{\{(.+?)\}\}/g;
+    let matches = [];
+    let match;
+    while ((match = pattern.exec(attr)) !== null) {
+      matches.push(match[1]);
+    }
+    return matches;
   }
 
   //input opeartion
@@ -497,22 +517,24 @@ class MiniJs {
     let tempArr = [];
     if (nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
-      // const temp = data.map((item, index) => {
-      //   return {
-      //     type: "add",
-      //     target: data,
-      //     currentPath: `${nestedKey}${index}`,
-      //     newValue: item,
-      //   };
-      // });
-      if (nestedKey.endsWith("."))
-        nestedKey = nestedKey.slice(0, nestedKey.length - 1);
-      tempArr.push({
-        type: "add",
-        target: data,
-        currentPath: `${nestedKey}`,
-        newValue: data,
+      const temp = data.map((item, index) => {
+        return {
+          type: "add",
+          target: data,
+          currentPath: `${nestedKey}${index}`,
+          newValue: item,
+        };
       });
+      if (nestedKey.endsWith(".")) {
+        nestedKey = nestedKey.slice(0, nestedKey.length - 1);
+      }
+      tempArr = [...tempArr, ...temp];  
+      // tempArr.push({
+      //   type: "add",
+      //   target: data,
+      //   currentPath: `${nestedKey}`,
+      //   newValue: data,
+      // });
       tempArr.push({
         type: "add",
         target: data,
@@ -694,7 +716,7 @@ class MiniJs {
         ...item,
         newValue: mainObj,
         currentPath:
-          item.currentPath + isCurrentValueisObject ? "" : "." + currentKey,
+          item.currentPath + "." + currentKey,
       };
       this.modifyMdInputValue(obj, ele, true);
       this.modifyMdTextValue(obj, ele, true);
@@ -725,7 +747,7 @@ class MiniJs {
   }
 
   addAllAttributeToChildren(selector, item, ele, varName) {
-    const attr = ele.getAttribute(selector);
+    let attr = ele.getAttribute(selector);
     if (attr) {
       if (attr == varName) {
         ele.setAttribute(selector, attr.replace(varName, item.currentPath));
@@ -737,12 +759,49 @@ class MiniJs {
           selector,
           attr.replaceAll(varName + ".", item.currentPath + ".")
         );
+      } else if(attr && attr.includes("{{")) {
+        attr = this.replaceVarNameInStringLiteral(varName, attr, item.currentPath);
+        ele.setAttribute(
+          selector,
+          attr
+        );
       }
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
     elements.forEach((element) => {
       this.addAllAttributeToChildren(selector, item, element, varName);
     });
+  }
+
+  //replace attr name with {{name.key}}
+  replaceVarNameInStringLiteral(varName, attr, currentPath) {
+
+
+    const matches = this.getAllKeyFromAttrWithBraces(attr);
+    matches.forEach(key => {
+      if(key) {
+        const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
+        if(regex.exec(attr)) {
+          attr = attr.replace(regex, (match, variable) => {
+            const result = match.replace(varName, currentPath);
+            return (result || result ==0 ) ? result : match;
+          });
+        }
+      }
+    });
+
+    // let teampArr1 = attr.split("{{");
+    // let teampArr2 = teampArr1[1].split("}}");
+    // let actualVarName = teampArr2[0];
+    // teampArr2[0] = actualVarName.split(".").map(item => {
+    //   if(item == varName) {
+    //     return currentPath;
+    //   }
+    //   return item;
+    // }).join(".");
+    // teampArr1[1] = teampArr2.join("}}")
+    // return teampArr1.join("{{")
+    return attr;
   }
 
   //attr for attr and class

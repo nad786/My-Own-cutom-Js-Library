@@ -25,9 +25,8 @@
         <input md-input="todoItem" />
         <button id="todo">Add Item</button>
         <ul md-for="list" md-let="item">
-          <li md-text="item"></li>
+          <li md-text="{{item}}"></li>
         </ul>
-
         <form>
           <label for="fname">First name:</label><br />
           <input type="text" md-input="person.fname" /><span

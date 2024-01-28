@@ -1,9 +1,11 @@
+console.time("start");
 const instance = MiniJs.create({
     todoItem: "",
     // textarea: "",
     list: ["Default Item"],
-    // person: { fname: "john", lname: "doe", email: "nad@nad.com" },
+    person: { fname: "john", lname: "doe", email: "nad@nad.com" },
   });
+  console.timeEnd("start");
 //   document.getElementById("clickMe").addEventListener("click", (e) => {
 //     instance.textarea = JSON.stringify(instance.person);
 //   });
