@@ -56,13 +56,9 @@ class Controls {
   value = "";
   ele = null;
   validators = [];
-  constructor(values) {
-    if (Array.isArray(values)) {
-      this.value = values[0];
-      this.validators = Array.isArray(values[1]) ? values[1] : [values[1]];
-    } else {
-      this.value = this.values;
-    }
+  constructor(value, validdator = []) {
+    this.value = value;
+    this.validators = Array.isArray(validdator) ? validdator : [validdator];
   }
 }
 class MiniJsFormValidaion {
@@ -154,6 +150,15 @@ class MiniJsFormValidaion {
   formValidation(validationObj = [], targetObj = {}, ele) {
     let error = false;
     this.formObj[this.objKey].valid = false;
+    targetObj.errors = {
+      required: false,
+      minLength: false,
+      maxLength: false,
+      min: false,
+      max: false,
+      pattern: false 
+
+    }
     for(let validation of validationObj) {
       const validatorProp = validation();
       switch (validatorProp?.name) {
@@ -163,7 +168,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = "Field is mandatory";
-            targetObj.errors  = [{error: "Missing"}]
+            targetObj.errors['required'] = true
           return;
         }
          if(ele.getAttribute("type") == 'radio') {
@@ -180,7 +185,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = "Field is mandatory";
-            targetObj.errors  = [{error: "Missing"}]
+            targetObj.errors['required'] = true
             return;
           }
           
@@ -189,7 +194,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = "Field is mandatory";
-            targetObj.errors  = [{error: "Missing"}]
+            targetObj.errors['required'] = true
             return;
           }
           break;
@@ -199,6 +204,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = `Min Length is ${validatorProp.value}`;
+            targetObj.errors['minLength'] = true
             return;
           }
           break;
@@ -208,6 +214,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = `Max Length is ${validatorProp.value}`;
+            targetObj.errors['maxLength'] = true
             return;
           }
           break;
@@ -218,6 +225,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = `Pattern mismatch`;
+            targetObj.errors['pattern'] = true
             return;
           }
           break;
@@ -228,6 +236,7 @@ class MiniJsFormValidaion {
               error = true;
               targetObj.valid = false;
               targetObj.error = `Min value is ${validatorProp.value}`;
+              targetObj.errors['min'] = true
               return;
             }
             break;
@@ -237,6 +246,7 @@ class MiniJsFormValidaion {
                 error = true;
                 targetObj.valid = false;
                 targetObj.error = `Max value is ${validatorProp.value}`;
+                targetObj.errors['max'] = true
                 return;
               }
               break;
@@ -267,6 +277,7 @@ class MiniJsFormValidaion {
         ele.setCustomValidity("");
         targetObj.valid = true;
         targetObj.error = "";
+        
     }
     this.formObj[this.objKey].valid = this.form.checkValidity();
   }
