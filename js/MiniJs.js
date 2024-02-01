@@ -13,30 +13,39 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    if (data.length == 1 && typeof data[0].newValue == "object") {
-      let item;
-      let currentPath = data[0].currentPath;
-      let isArray = Array.isArray(data[0].newValue) || !isNaN(data[0].property);
-      if (isArray) {
-        item = data;
-        item.push({
-          type: "add",
-          newValue: data[0].newValue.length,
-          currentPath: `${data[0].currentPath}.length`,
-          target: data[0],
-        });
-      } else {
-        let split = currentPath.split(".");
-        let targetKey = currentPath;
-        if (split.length > 1) {
-          targetKey = split.pop();
+
+    let nonPrimitiveData = data.filter(item => typeof item.newValue == "object");
+    let primitiveData = data.filter(item => typeof item.newValue != "object");
+    if(nonPrimitiveData.length) {
+      let arr = [];
+      nonPrimitiveData.forEach(nonPrimitiveItem => {
+        let item;
+        let currentPath = nonPrimitiveItem.currentPath;
+        let isArray = Array.isArray(nonPrimitiveItem.newValue) || !isNaN(nonPrimitiveItem.property);
+        if (isArray) {
+          item = data;
+          item.push({
+            type: "add",
+            newValue: nonPrimitiveItem.newValue.length,
+            currentPath: `${data[0].currentPath}.length`,
+            target: nonPrimitiveItem,
+          });
+        } else {
+          let split = currentPath.split(".");
+          let targetKey = currentPath;
+          if (split.length > 1) {
+            targetKey = split.pop();
+          }
+          item = this.generateDefaultObjectType(
+            this.getValueFromkeyWithDot(nonPrimitiveItem.target, targetKey),
+            currentPath
+          );
         }
-        item = this.generateDefaultObjectType(
-          this.getValueFromkeyWithDot(data[0].target, targetKey),
-          currentPath
-        );
-      }
-      this.performOperation(item);
+        arr = [...arr, ...item]
+      })
+     
+      this.performOperation([...arr, ...primitiveData]);
+
     } else {
       this.performOperation(data);
     }
