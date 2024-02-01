@@ -30,15 +30,33 @@
               </div>
               <div class="form-group">
                 <label for="Email">Email</label><br>
-                <input formControlName="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" type="text" class="form-control" md-input="person.email"><br>
+                <input formControlName="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" type="text" class="form-control"><br>
                 <div md-text="myForm.controls.email.valid"></div>
                 <span md-text="myForm.controls.email.error"></span>
+              </div>
+              <div class="form-group">
+                <label for="age">Age</label><br>
+                <input formControlName="age" type="number" class="form-control"><br>
+                <div md-text="myForm.controls.age.valid"></div>
+                <span md-text="myForm.controls.age.error"></span>
               </div>
                 <!-- <div class="form-group">
                   <input type="checkbox" name="hobby" md-input="person.hobbies.0" value="online"><label>Onine Game</label><br>
                   <input type="checkbox" name="hobby" md-input="person.hobbies.1" value="ofline"><label>Offline Game</label><br>
                 </div> -->
                
+                <div class="form-group">
+                  <label for="gender">Geneder </label>
+                  <input type="radio" value="male" id="gender" name="gender" formControlName="gender"> Male
+                  <input type="radio" value="female" id="gender" name="gender" formControlName="gender"> Female
+                  <span md-text="myForm.controls.gender.error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="isMarried">Married </label>
+                  <input type="checkbox" id="isMarried" name="isMarried" value="true" formControlName="isMarried">
+                  <span md-text="myForm.controls.isMarried.error"></span>
+                </div>
                 <!-- <input type="radio" name="gender" md-input="person.gender" value="female"><input type="radio" name="gender" md-input="person.gender" value="male"><br><div md-text="person.gender"></div> -->
                 <select formControlName="group" md-input="person.group">
                   <option value="">Select</option>

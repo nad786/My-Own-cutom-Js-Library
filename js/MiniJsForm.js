@@ -20,6 +20,24 @@ class Validators {
     };
   }
 
+  static min(num) {
+    return () => {
+      return {
+        name: "min",
+        value: num,
+      };
+    };
+  }
+
+  static max(num) {
+    return () => {
+      return {
+        name: "max",
+        value: num,
+      };
+    };
+  }
+
   static pattern(regex) {
     return () => {
      return { name: "pattern",
@@ -55,6 +73,7 @@ class MiniJsFormValidaion {
   constructor({ prefix = "md-", selector = "form" } = {}) {
     this.prefix = prefix;
     this.form = document.querySelector(selector);
+    this.objKey = this.form.getAttribute("formGroup")
   }
 
   buildControls(formControls = {}, options = {}) {
@@ -73,26 +92,35 @@ class MiniJsFormValidaion {
     };
     for (let key in formControls) {
       this.formObjReplicateWithControls[objKey].controls[key] = formControls[key];
-      formObj[objKey].controls[key] = {
+      this.formObj[this.objKey].controls[key] = {
         valid: true,
         touched: false,
         errors: [],
         value: this.formObjReplicateWithControls[objKey].controls[key].value,
         error: ""
       };
-      const ele = this.form.querySelector(`[formControlName="${key}"]`);
-      ele.setAttribute(
-        `${this.prefix}input`,
-        `${objKey}.controls.${key}.value`
-      );
-      ele.value = formControls[key]?.value;
-      this.updateTouchedProp(ele, key);
-
-      this.formValidation(formControls[key].validators, formObj[objKey].controls[key], ele)
+      const elements = this.form.querySelectorAll(`[formControlName="${key}"]`);
+      elements.forEach(ele => {
+        ele.setAttribute(
+          `${this.prefix}input`,
+          `${this.objKey}.controls.${key}.value`
+        );
+        if(ele.getAttribute('type') == "checkbox" || ele.getAttribute('type') == "radio") {
+          if(formControls[key]?.value == ele.value) {
+            ele.checked = true;
+          } else {
+            ele.checked = false;
+          }
+        } else {
+          ele.value = formControls[key]?.value;
+        }
+        this.updateTouchedProp(ele, key);
+        this.formValidation(formControls[key].validators, this.formObj[this.objKey].controls[key], ele)
+      });
 
     }
 
-    this.createMiniJSObj(formObj);
+    this.createMiniJSObj(this.formObj);
 
     ObservableSlim.observe(this.miniJSInstance.lib, (changes) => {
       this.validateElement(changes);
@@ -125,11 +153,38 @@ class MiniJsFormValidaion {
 
   formValidation(validationObj = [], targetObj = {}, ele) {
     let error = false;
+    this.formObj[this.objKey].valid = false;
     for(let validation of validationObj) {
       const validatorProp = validation();
       switch (validatorProp?.name) {
         case "required":
-          if (!ele.value) {
+          if(ele.getAttribute("type") == 'checkbox' && !ele.checked) {
+            ele.setCustomValidity("Field is mandatory");
+            error = true;
+            targetObj.valid = false;
+            targetObj.error = "Field is mandatory";
+            targetObj.errors  = [{error: "Missing"}]
+          return;
+        }
+         if(ele.getAttribute("type") == 'radio') {
+          const name = ele.getAttribute('name');
+          const allRadioButton = this.form.elements[name];
+          let flag = false;
+          allRadioButton.forEach(radioBtn => {
+            if(radioBtn.checked) {
+              flag = true;
+            }
+          })
+          if(!flag) {
+            ele.setCustomValidity("Field is mandatory");
+            error = true;
+            targetObj.valid = false;
+            targetObj.error = "Field is mandatory";
+            targetObj.errors  = [{error: "Missing"}]
+            return;
+          }
+          
+        } if (!ele.value ) {
             ele.setCustomValidity("Field is mandatory");
             error = true;
             targetObj.valid = false;
@@ -166,6 +221,25 @@ class MiniJsFormValidaion {
             return;
           }
           break;
+
+          case "min":
+            if (parseInt(ele.value) <= validatorProp.value) {
+              ele.setCustomValidity(`Min value is ${validatorProp.value}`);
+              error = true;
+              targetObj.valid = false;
+              targetObj.error = `Min value is ${validatorProp.value}`;
+              return;
+            }
+            break;
+            case "max":
+              if (parseInt(ele.value) >= validatorProp.value) {
+                ele.setCustomValidity(`Max value is ${validatorProp.value}`);
+                error = true;
+                targetObj.valid = false;
+                targetObj.error = `Max value is ${validatorProp.value}`;
+                return;
+              }
+              break;
         default:
           let cbResponse = validatorProp.value(ele.value);
           if(typeof cbResponse == 'string') {
@@ -183,17 +257,18 @@ class MiniJsFormValidaion {
       }
     };
     if (!error) {
-      ele.setCustomValidity("");
-      targetObj.valid = true;
-      targetObj.error = "";
+      if(ele.getAttribute("type") == 'radio') {
+        const name = ele.getAttribute('name');
+        const allRadioButton = this.form.elements[name];
+        allRadioButton.forEach(ele => {
+          ele.setCustomValidity("");
+        })
+      }
+        ele.setCustomValidity("");
+        targetObj.valid = true;
+        targetObj.error = "";
     }
-
-    try {
-      const objKey = this.form.getAttribute("formGroup")
-      this.formObj[objKey].valid = this.form.checkValidity();
-    } catch {
-
-    }
+    this.formObj[this.objKey].valid = this.form.checkValidity();
   }
 
   updateTouchedProp(ele, key) {
@@ -218,6 +293,14 @@ class MiniJsFormValidaion {
 
   buildForm(obj, options = {}) {
     // const instance = new MiniJsFormValidaion(options);
+
+    this.formObj = {
+      [this.objKey] : {
+        controls: {
+
+        }
+      }
+    }
     this.formObj = this.buildControls(obj, options);
   }
 }

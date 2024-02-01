@@ -374,6 +374,7 @@ class MiniJs {
   performInputOperation(item) {
     const elements = this.container.querySelectorAll(
       `[${this.prefix}input="${item.currentPath}"]:not([type="checkbox"],[type="radio"])`
+      // `[${this.prefix}input="${item.currentPath}"]`
     );
     if (elements.length) {
       elements.forEach((element) => {
@@ -408,8 +409,8 @@ class MiniJs {
       selector: `${this.prefix}input`,
       cb: (ele, val) => {
         ele.value = val;
-        const event = new Event("change");
-        ele.dispatchEvent(event);
+        // const event = new Event("change");
+        // ele.dispatchEvent(event);
       },
     });
   }
@@ -481,7 +482,8 @@ class MiniJs {
     if (elements.length) {
       elements.forEach((element) => {
         const typeattr = element.getAttribute("type");
-        if (element.tagName == "INPUT" && (!typeattr || typeattr == "text")) {
+        // if (element.tagName == "INPUT" && (!typeattr || typeattr == "text")) {
+          if (element.tagName == "INPUT" && (!typeattr || typeattr != "radio" || typeattr != "checkbox")) {
           element.removeEventListener(
             "keyup",
             this.performInputChangeEvent.bind(this)
