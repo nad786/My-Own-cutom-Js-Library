@@ -1,22 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Open Window without Toolbars</title>
-  <script>
-    function openChildWindow() {
-      const childInstance = window.open('child.html', 'ChildWindow', "resizable=no, scrollbars=no, status=no, toolbar=no");
-      childInstance.onload = function() {
-        childInstance.postMessage([1,2,3], "*")
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Window without Toolbars</title>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/mammoth@1.4.8/mammoth.browser.min.js"
+    ></script>
+
+    <!-- Pizzip -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.10.0/pizzip.min.js"></script>
+<!-- Pizzip Utils -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.10.0/pizzip-utils.min.js"></script>
+<!-- docxtemplater -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.21.1/docxtemplater.js"></script>
+
+
+    <script>
+      function openChildWindow() {
+        const childInstance = window.open(
+          "child.html",
+          "ChildWindow",
+          "resizable=no, scrollbars=no, status=no, toolbar=no"
+        );
+        childInstance.onload = function () {
+          childInstance.postMessage([1, 2, 3], "*");
+        };
       }
+      window.sendDataToParent = function (event) {
+        console.log("Recived data from child", event);
+      };
+    </script>
+  </head>
+  <body>
+    <button onclick="openChildWindow()">Open Child Window</button>
+    <!-- <input type="file" onchange="parseWordDocxFile(this)" /> -->
+    <input type="file" id="file-input" />
+    <img src="./SampleGIFImage_40kbmb.gif">
+    <div id="editor-container"></div>
+    <div id="preview-container"></div>
+    <div id="preview-container-3"></div>
+    <script>
+      function parseWordDocxFile(inputElement) {
+        result1 = document.getElementById("preview-container")
+        result2 = document.getElementById("editor-container");
+        result3 = document.getElementById("preview-container-3");
+        var files = inputElement.files || [];
+        if (!files.length) return;
+        var file = files[0];
+
+        console.time();
+        var reader = new FileReader();
+        reader.onloadend = function (event) {
+          var arrayBuffer = reader.result;
+          // debugger
+
+          mammoth
+            .convertToHtml({ arrayBuffer: arrayBuffer })
+            .then(function (resultObject) {
+              result1.innerHTML = resultObject.value;
+            });
+          console.timeEnd();
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    </script>
+
+<script>
+  document.getElementById('file-input').addEventListener('change', function (event) {
+    var file = event.target.files[0];
+
+    if (file && file.name.endsWith('.docx')) {
+      previewDocx(file);
+    } else {
+      alert('Please select a valid DOCX file.');
     }
-    window.sendDataToParent = function(event) {
-      console.log("Recived data from child", event)
-    }
-  </script>
-</head>
-<body>
-  <button onclick="openChildWindow()">Open Child Window</button>
-</body>
+  });
+
+  function previewDocx(file) {
+    var reader = new FileReader();
+
+    reader.onload = function (event) {
+      var arrayBuffer = event.target.result;
+
+      // Convert ArrayBuffer to Uint8Array
+      var uint8Array = new Uint8Array(arrayBuffer);
+
+      // Use Pizzip and docxtemplater to process DOCX
+      var zip = new PizZip(uint8Array);
+      var doc = new window.docxtemplater().loadZip(zip);
+
+      // Get the content as HTML
+      var html = doc.getFullText();
+
+      // Display the HTML content
+      displayPreview(html);
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  function displayPreview(html) {
+    var previewContainer = document.getElementById('preview-container');
+    previewContainer.innerHTML = html;
+  }
+</script>
+
+  </body>
 </html>

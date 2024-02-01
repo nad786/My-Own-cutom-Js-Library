@@ -34,13 +34,16 @@
                 <label for="Email">Email</label><br>
                 <input formControlName="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" type="text" class="form-control"><br>
                 <div md-text="myForm.controls.email.valid"></div>
-                <span md-text="myForm.controls.email.error"></span>
+                <span md-text="myForm.controls.email.error"></span><br>
+                <span md-if="myForm.controls.email.errors.pattern">Invalid Email</span>
               </div>
               <div class="form-group">
                 <label for="age">Age</label><br>
                 <input formControlName="age" type="number" class="form-control"><br>
                 <div md-text="myForm.controls.age.valid"></div>
                 <span md-text="myForm.controls.age.error"></span>
+                <span md-if="myForm.controls.age.errors.min">Min Age, 18 is allowed</span>
+                <span md-if="myForm.controls.age.errors.max">Max Age, 55 is allowed</span>
               </div>
                 <!-- <div class="form-group">
                   <input type="checkbox" name="hobby" md-input="person.hobbies.0" value="online"><label>Onine Game</label><br>
