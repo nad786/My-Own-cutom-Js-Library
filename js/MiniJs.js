@@ -492,7 +492,7 @@ class MiniJs {
       elements.forEach((element) => {
         const typeattr = element.getAttribute("type");
         // if (element.tagName == "INPUT" && (!typeattr || typeattr == "text")) {
-          if (element.tagName == "INPUT" && (!typeattr || typeattr != "radio" || typeattr != "checkbox")) {
+          if (element.tagName == "INPUT" && (!typeattr || (typeattr != "radio" && typeattr != "checkbox"))) {
           element.removeEventListener(
             "keyup",
             this.performInputChangeEvent.bind(this)
