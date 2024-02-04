@@ -13,15 +13,18 @@ class MiniJs {
   }
 
   detectChanges(data) {
-
-    let nonPrimitiveData = data.filter(item => typeof item.newValue == "object");
-    let primitiveData = data.filter(item => typeof item.newValue != "object");
-    if(nonPrimitiveData.length) {
+    let nonPrimitiveData = data.filter(
+      (item) => typeof item.newValue == "object"
+    );
+    let primitiveData = data.filter((item) => typeof item.newValue != "object");
+    if (nonPrimitiveData.length) {
       let arr = [];
-      nonPrimitiveData.forEach(nonPrimitiveItem => {
+      nonPrimitiveData.forEach((nonPrimitiveItem) => {
         let item;
         let currentPath = nonPrimitiveItem.currentPath;
-        let isArray = Array.isArray(nonPrimitiveItem.newValue) || !isNaN(nonPrimitiveItem.property);
+        let isArray =
+          Array.isArray(nonPrimitiveItem.newValue) ||
+          !isNaN(nonPrimitiveItem.property);
         if (isArray) {
           item = data;
           item.push({
@@ -41,11 +44,10 @@ class MiniJs {
             currentPath
           );
         }
-        arr = [...arr, ...item]
-      })
-     
-      this.performOperation([...arr, ...primitiveData]);
+        arr = [...arr, ...item];
+      });
 
+      this.performOperation([...arr, ...primitiveData]);
     } else {
       this.performOperation(data);
     }
@@ -143,24 +145,21 @@ class MiniJs {
     }
   }
 
-
   replaceAllKeyToValueWithRegex(attr) {
-  
     const matches = this.getAllKeyFromAttrWithBraces(attr);
-    matches.forEach(key => {
-      if(key) {
+    matches.forEach((key) => {
+      if (key) {
         const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
-        if(regex.exec(attr)) {
+        if (regex.exec(attr)) {
           attr = attr.replace(regex, (match, variable) => {
-            const result = this.getValueFromkeyWithDot(this.lib, key)
-            return (result || result ==0 ) ? result : "";
+            const result = this.getValueFromkeyWithDot(this.lib, key);
+            return result || result == 0 ? result : "";
           });
         }
       }
     });
     return attr;
   }
-
 
   getAllKeyFromAttrWithBraces(attr) {
     const pattern = /\{\{(.+?)\}\}/g;
@@ -172,7 +171,6 @@ class MiniJs {
     return matches;
   }
 
-
   //perform all all operation based on action mapper
   performOperation(data) {
     data.forEach((item) => {
@@ -182,7 +180,7 @@ class MiniJs {
         this.performAttributeAddOpeartaion(item, key);
         this.performTextOperation(item, key);
         this.performInputOperation(item, key);
-        this.performDisabledValue(item)
+        this.performDisabledValue(item);
       }
       this.performClassOpeartion(item, key);
       this.performIfStatementOperation(item, key);
@@ -195,14 +193,12 @@ class MiniJs {
       `[${this.prefix}enabled="${item.currentPath}"]`
     );
     elements.forEach((element) => {
-      if(this.getValueFromkeyWithDot(this.lib, item.currentPath)) {
+      if (this.getValueFromkeyWithDot(this.lib, item.currentPath)) {
         element.disabled = false;
       } else {
         element.disabled = true;
       }
     });
-
-
   }
 
   //class operation
@@ -359,9 +355,9 @@ class MiniJs {
 
   modifyMdTextValue(item, ele, flag = false) {
     let attr = ele.getAttribute(`${this.prefix}text`);
-    if(!attr) {
+    if (!attr) {
       const elements = ele.querySelectorAll(`[${this.prefix}text]`);
-      elements.forEach(element => {
+      elements.forEach((element) => {
         this.modifyMdTextValue(item, element, flag);
       });
       return;
@@ -369,9 +365,8 @@ class MiniJs {
     let val;
     if (attr == item.currentPath) {
       val = this.getValueFromkeyWithDot(this.lib, attr);
-
     } else if (!flag && attr?.includes("{{")) {
-        val = this.replaceAllKeyToValueWithRegex(attr, this.allKey);
+      val = this.replaceAllKeyToValueWithRegex(attr, this.allKey);
     } else {
       return;
     }
@@ -492,15 +487,12 @@ class MiniJs {
       elements.forEach((element) => {
         const typeattr = element.getAttribute("type");
         // if (element.tagName == "INPUT" && (!typeattr || typeattr == "text")) {
-          if (element.tagName == "INPUT" && (!typeattr || (typeattr != "radio" && typeattr != "checkbox"))) {
-          element.removeEventListener(
-            "keyup",
-            this.performInputChangeEvent.bind(this)
-          );
-          element.addEventListener(
-            "keyup",
-            this.performInputChangeEvent.bind(this)
-          );
+        if (
+          element.tagName == "INPUT" &&
+          (!typeattr || (typeattr != "radio" && typeattr != "checkbox"))
+        ) {
+          element.removeEventListener("keyup", this.processChangeKeyUpEvent.bind(this));
+          element.addEventListener("keyup", this.processChangeKeyUpEvent.bind(this));
         } else {
           element.removeEventListener(
             "change",
@@ -558,7 +550,7 @@ class MiniJs {
       if (nestedKey.endsWith(".")) {
         nestedKey = nestedKey.slice(0, nestedKey.length - 1);
       }
-      tempArr = [...tempArr, ...temp];  
+      tempArr = [...tempArr, ...temp];
       // tempArr.push({
       //   type: "add",
       //   target: data,
@@ -745,8 +737,7 @@ class MiniJs {
       const obj = {
         ...item,
         newValue: mainObj,
-        currentPath:
-          item.currentPath + "." + currentKey,
+        currentPath: item.currentPath + "." + currentKey,
       };
       this.modifyMdInputValue(obj, ele, true);
       this.modifyMdTextValue(obj, ele, true);
@@ -789,12 +780,13 @@ class MiniJs {
           selector,
           attr.replaceAll(varName + ".", item.currentPath + ".")
         );
-      } else if(attr && attr.includes("{{")) {
-        attr = this.replaceVarNameInStringLiteral(varName, attr, item.currentPath);
-        ele.setAttribute(
-          selector,
-          attr
+      } else if (attr && attr.includes("{{")) {
+        attr = this.replaceVarNameInStringLiteral(
+          varName,
+          attr,
+          item.currentPath
         );
+        ele.setAttribute(selector, attr);
       }
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
@@ -805,16 +797,14 @@ class MiniJs {
 
   //replace attr name with {{name.key}}
   replaceVarNameInStringLiteral(varName, attr, currentPath) {
-
-
     const matches = this.getAllKeyFromAttrWithBraces(attr);
-    matches.forEach(key => {
-      if(key) {
+    matches.forEach((key) => {
+      if (key) {
         const regex = new RegExp(`{{\\s*(${key}?)\\s*}}`);
-        if(regex.exec(attr)) {
+        if (regex.exec(attr)) {
           attr = attr.replace(regex, (match, variable) => {
             const result = match.replace(varName, currentPath);
-            return (result || result ==0 ) ? result : match;
+            return result || result == 0 ? result : match;
           });
         }
       }
@@ -933,6 +923,18 @@ class MiniJs {
     });
   }
 
+  processChangeKeyUpEvent = this.debounceFunc((e) => this.performInputChangeEvent(e));
+
+  debounceFunc(func, timeout = 300) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        func.apply(this, args);
+      }, timeout);
+    };
+  }
+
   deletePropertInLoop({ item, key, elements }) {
     this.listContainer[key].forEach((ele) => {
       const nodes = ele.children;
@@ -945,6 +947,4 @@ class MiniJs {
     instance.init(obj);
     return instance.lib;
   }
-
-  
 }

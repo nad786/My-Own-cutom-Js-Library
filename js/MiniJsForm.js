@@ -45,16 +45,13 @@ class Validators {
     }
   }
 
-  static customValidation(cb) {
+  static custom(cb) {
     return () => {
       return {name: 'custom', value: cb}
     }
   }
 }
 
-class FormGroup {
-
-}
 
 class FormControl {
   value = "";
@@ -175,7 +172,8 @@ class MiniJsFormValidaion {
       maxLength: false,
       min: false,
       max: false,
-      pattern: false 
+      pattern: false,
+      custom: false
 
     }
     for(let validation of validationObj) {
@@ -271,10 +269,15 @@ class MiniJsFormValidaion {
               break;
         default:
           let cbResponse = validatorProp.value(ele.value);
-          if(typeof cbResponse == 'string') {
+          if(typeof cbResponse == 'boolean') {
             cbResponse = {
-              error: true,
+              error: cbResponse,
               msg: "Custom validation failed"
+            }
+          } else if(typeof cbResponse == 'string') {
+            cbResponse = {
+              error: !!cbResponse,
+              msg: cbResponse
             }
           }
           if(cbResponse.error) {
@@ -282,6 +285,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = cbResponse?.msg;
+            targetObj.errors["custom"] = true 
           }
       }
     };
