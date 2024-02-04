@@ -52,7 +52,11 @@ class Validators {
   }
 }
 
-class Controls {
+class FormGroup {
+
+}
+
+class FormControl {
   value = "";
   ele = null;
   validators = [];
@@ -75,47 +79,14 @@ class MiniJsFormValidaion {
   buildControls(formControls = {}, options = {}) {
     const objKey = this.form.getAttribute("formGroup");
     this.objKey = objKey;
-    let formObj = {
-      [objKey]: {
-        controls: {},
-        valid: true,
-      },
-    };
     this.formObjReplicateWithControls = {
       [objKey]: {
         controls: {},
       },
     };
-    for (let key in formControls) {
-      this.formObjReplicateWithControls[objKey].controls[key] = formControls[key];
-      this.formObj[this.objKey].controls[key] = {
-        valid: true,
-        touched: false,
-        errors: [],
-        value: this.formObjReplicateWithControls[objKey].controls[key].value,
-        error: ""
-      };
-      const elements = this.form.querySelectorAll(`[formControlName="${key}"]`);
-      elements.forEach(ele => {
-        ele.setAttribute(
-          `${this.prefix}input`,
-          `${this.objKey}.controls.${key}.value`
-        );
-        if(ele.getAttribute('type') == "checkbox" || ele.getAttribute('type') == "radio") {
-          if(formControls[key]?.value == ele.value) {
-            ele.checked = true;
-          } else {
-            ele.checked = false;
-          }
-        } else {
-          ele.value = formControls[key]?.value;
-        }
-        this.updateTouchedProp(ele, key);
-        this.formValidation(formControls[key].validators, this.formObj[this.objKey].controls[key], ele)
-      });
 
-    }
-
+    this.generateObjectFromControls(this.formObj[this.objKey], formControls)
+    
     this.createMiniJSObj(this.formObj);
 
     ObservableSlim.observe(this.miniJSInstance.lib, (changes) => {
@@ -124,24 +95,72 @@ class MiniJsFormValidaion {
     return this.miniJSInstance.lib;
   }
 
+  generateObjectFromControls(obj = {}, formControls = {}, selector = "", objSelector = `${this.objKey}.controls`) {
+   
+    for (let key in formControls) {
+      // this.formObjReplicateWithControls[objKey].controls[key] = formControls[key];
+
+      if(formControls[key] instanceof FormControl) {
+        obj.controls[key] = {
+          valid: true,
+          touched: false,
+          errors: [],
+          value: formControls[key].value,
+          error: "",
+          validators: formControls[key].validators
+        };
+        // const elements = this.form.querySelectorAll(`${selector ? selector :"div:not([formGroupName])"}  [formControlName="${key}"]`);
+        const elements = document.querySelectorAll(`form[formGroup="${this.objKey}"] ${selector ? selector :":not([formGroupName])"}  [formControlName="${key}"]`)
+        elements.forEach(ele => {
+          ele.setAttribute(
+            `${this.prefix}input`,
+            `${objSelector}.${key}.value`
+          );
+          if(ele.getAttribute('type') == "checkbox" || ele.getAttribute('type') == "radio") {
+            if(formControls[key]?.value == ele.value) {
+              ele.checked = true;
+            } else {
+              ele.checked = false;
+            }
+          } else {
+            ele.value = formControls[key]?.value;
+          }
+          this.updateTouchedProp(ele, objSelector, key);
+          this.formValidation(formControls[key].validators, obj.controls[key], ele)
+        });
+      } else {
+        selector += ` [formGroupName="${key}"]`;
+        obj.controls[key] = {
+          controls: {}
+        };
+        this.generateObjectFromControls( obj.controls[key], formControls[key], selector, objSelector + `.${key}.controls`);
+      }
+    }
+  }
+
   validateElement(changes = []) {
     changes.forEach((item) => {
       const path = item.currentPath.split(".");
       path.pop();
-      const validators = this.miniJSInstance.getValueFromkeyWithDot(
-        this.formObjReplicateWithControls,
-        path.join(".")
-      )?.validators;
-      const realObj = this.miniJSInstance.getValueFromkeyWithDot(
-        this.miniJSInstance.lib,
-        path.join(".")
-      );
+      // const validators = this.miniJSInstance.getValueFromkeyWithDot(
+      //   this.formObj,
+      //   path.join(".")
+      // )?.validators;
+     
       const ele = this.form.querySelector(
         `[${this.prefix}input="${item.currentPath}"]`
       );
       
-      if (validators?.length && ele) {
-        this.formValidation(validators, realObj, ele);
+      if (ele) {
+        const realObj = this.miniJSInstance.getValueFromkeyWithDot(
+          this.miniJSInstance.lib,
+          path.join(".")
+        );
+
+        if(realObj?.validators?.length) {
+          this.formValidation(realObj.validators, realObj, ele);
+        }
+
       }
      
     });
@@ -282,9 +301,10 @@ class MiniJsFormValidaion {
     this.formObj[this.objKey].valid = this.form.checkValidity();
   }
 
-  updateTouchedProp(ele, key) {
+  updateTouchedProp(ele, objSelector, key) {
     ele.addEventListener("focus", (e) => {
-      this.formObj[this.objKey].controls[key].touched = true;
+      const obj = this.miniJSInstance.getValueFromkeyWithDot(this.formObj, objSelector)
+      obj[key].touched = true;
     })
   }
 
@@ -293,11 +313,14 @@ class MiniJsFormValidaion {
     this.miniJSInstance.init(obj);
   }
 
-  getValues() {
-    const formKey = this.form.getAttribute("formGroup");
+  getValues(obj = this.formObj[this.objKey].controls) {
     const result = {};
-    for(let key in this.formObj[formKey].controls) {
-      result[key] = this.formObj[formKey].controls[key].value;
+    for(let key in obj) {
+      if(obj[key]?.controls) {
+        result[key] = this.getValues(obj[key].controls);
+      } else {
+        result[key] = obj[key].value;
+      }
     }
     return result;
   }
