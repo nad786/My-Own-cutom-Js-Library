@@ -20,6 +20,15 @@ class Validators {
     };
   }
 
+  static get email() {
+    return () => {
+      return {
+        name: "email",
+        value: true,
+      };
+    };
+  }
+
   static min(num) {
     return () => {
       return {
@@ -267,6 +276,20 @@ class MiniJsFormValidaion {
                 targetObj.valid = false;
                 targetObj.error = `Max value is ${validatorProp.value}`;
                 targetObj.errors['max'] = true
+                return;
+              }
+              break;
+            case "email":
+              if(!String(ele.value)
+              .toLowerCase()
+              .match(
+                /^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/
+              )) {
+                ele.setCustomValidity(`Invalid Email`);
+                error = true;
+                targetObj.valid = false;
+                targetObj.error = `Invalid Email`;
+                targetObj.errors['email'] = true
                 return;
               }
               break;

@@ -15,6 +15,12 @@
         /* grid-template-columns: 1fr 1fr; */
         gap: 20px;
       }
+      .error {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
     </style>
   </head>
   <body>
@@ -24,26 +30,26 @@
               <div class="form-group" >
                 <label for="fname">Name:</label><br>
                 <input formControlName="name" type="text" class="form-control" required><br>
-                <div md-text="valid: {{myForm.controls.name.valid}}"></div>
+                <div md-class="success=myForm.controls.name.valid;error=!myForm.controls.name.valid"  md-text="valid: {{myForm.controls.name.valid}}"></div>
                 <!-- <span md-if="!myForm.controls.name.valid">Custom Error</span> -->
-                <span md-if="myForm.controls.name.errors.required">Required: - Reqired Field</span>
-                <span md-if="myForm.controls.name.errors.minLength">MinLength: - Min Length Field</span>
-                <span md-if="myForm.controls.name.errors.maxLength">MaxLength: - max length Field</span>
+                <span    md-if="myForm.controls.name.errors.required && myForm.controls.name.touched">Required: - Reqired Field</span>
+                <span   md-if="myForm.controls.name.errors.minLength && myForm.controls.name.touched">MinLength: - Min Length Field</span>
+                <span   md-if="myForm.controls.name.errors.maxLength && myForm.controls.name.touched">MaxLength: - max length Field</span>
               </div>
               <div class="form-group">
                 <label for="Email">Email</label><br>
                 <input formControlName="email" type="text" class="form-control"><br>
-                <div md-text="myForm.controls.email.valid"></div>
-                <span md-text="myForm.controls.email.error"></span><br>
-                <span md-if="myForm.controls.email.errors.pattern">Invalid Email</span>
+                <div md-class="success=myForm.controls.email.valid;error=!myForm.controls.email.valid"   md-text="myForm.controls.email.valid"></div>
+                <span   md-text="myForm.controls.email.error"></span><br>
+                <span   md-if="myForm.controls.email.errors.pattern">Invalid Email</span>
               </div>
               <div class="form-group">
                 <label for="age">Age</label><br>
                 <input formControlName="age" type="number" class="form-control"><br>
-                <div md-text="myForm.controls.age.valid"></div>
-                <span md-text="myForm.controls.age.error"></span>
-                <span md-if="myForm.controls.age.errors.min">Min Age, 18 is allowed</span>
-                <span md-if="myForm.controls.age.errors.max">Max Age, 55 is allowed</span>
+                <div md-class="success=myForm.controls.age.valid;error=!myForm.controls.age.valid"   md-text="myForm.controls.age.valid"></div>
+                <span   md-text="myForm.controls.age.error"></span>
+                <span   md-if="myForm.controls.age.errors.min">Min Age, 18 is allowed</span>
+                <span   md-if="myForm.controls.age.errors.max">Max Age, 55 is allowed</span>
               </div>
                 <!-- <div class="form-group">
                   <input type="checkbox" name="hobby" md-input="person.hobbies.0" value="online"><label>Onine Game</label><br>
@@ -54,13 +60,13 @@
                   <label for="gender">Geneder </label>
                   <input type="radio" value="male" id="gender" name="gender" formControlName="gender"> Male
                   <input type="radio" value="female" id="gender" name="gender" formControlName="gender"> Female
-                  <span md-text="myForm.controls.gender.error"></span>
+                  <span md-class="success=myForm.controls.gender.valid;error=!myForm.controls.gender.valid"    md-text="myForm.controls.gender.error"></span>
                 </div>
 
                 <div class="form-group">
                   <label for="isMarried">Married </label>
                   <input type="checkbox" id="isMarried" name="isMarried" value="true" formControlName="isMarried">
-                  <span md-text="myForm.controls.isMarried.error"></span>
+                  <span md-class="success=myForm.controls.isMarried.valid;error=!myForm.controls.isMarried.valid"  md-text="myForm.controls.isMarried.error"></span>
                 </div>
                 <div class="form-group">
                   <select formControlName="group" md-input="person.group">
@@ -71,8 +77,8 @@
                     <option>4</option>
                     <option>5</option>
                   </select>
-                  <div md-text="myForm.controls.group.valid"></div>
-                 <span md-text="myForm.controls.group.error"></span>
+                  <div md-class="success=myForm.controls.group.valid;error=!myForm.controls.group.valid"  md-text="myForm.controls.group.valid"></div>
+                 <span   md-text="myForm.controls.group.error"></span>
                 </div>
                 <!-- <input type="radio" name="gender" md-input="person.gender" value="female"><input type="radio" name="gender" md-input="person.gender" value="male"><br><div md-text="person.gender"></div> -->
                
