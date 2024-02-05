@@ -14,7 +14,7 @@ class MiniJs {
 
   detectChanges(data) {
     let nonPrimitiveData = data.filter(
-      (item) => typeof item.newValue == "object"
+      (item) => typeof item.newValue == "object" && item.newValue != null
     );
     let primitiveData = data.filter((item) => typeof item.newValue != "object");
     if (nonPrimitiveData.length) {
@@ -104,7 +104,7 @@ class MiniJs {
           varName = "fnVar" + this.randomIntFromInterval(1, 1000);
           str = str.replaceAll(item, varName);
         }
-        if (isNaN(val) || val === "") {
+        if ((isNaN(val) || val === "") && val != undefined && val != null) {
           return `${varName}='${val}'`;
         }
         return `${varName}=${val}`;
