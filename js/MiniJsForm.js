@@ -86,8 +86,11 @@ class MiniJsFormValidaion {
     
     this.createMiniJSObj(this.formObj);
 
-    ObservableSlim.observe(this.miniJSInstance.lib, (changes) => {
-      this.validateElement(changes);
+    ObservableSlim.observe(this.miniJSInstance.lib, (changes = []) => {
+      changes = changes.filter(item => item.currentPath.endsWith(".value"));
+      if(changes.length) {
+        this.validateElement(changes);
+      }
     });
     return this.miniJSInstance.lib;
   }
@@ -327,6 +330,16 @@ class MiniJsFormValidaion {
       }
     }
     return result;
+  }
+
+  patchValues(obj = {}, formObj = this.formObj[this.objKey]) {
+    for(let key in obj) {
+      if(typeof obj[key] == 'object') {
+        this.patchValues(obj[key], formObj.controls[key]);
+      } else {
+        formObj.controls[key].value = obj[key];
+      }
+    }
   }
 
   buildForm(obj, options = {}) {
