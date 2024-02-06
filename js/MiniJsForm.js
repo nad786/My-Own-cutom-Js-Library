@@ -68,13 +68,13 @@ class FormControl {
   validators = [];
   constructor(value, validdator = []) {
     this.value = value;
-    this.validators = Array.isArray(validdator) ? validdator : [validdator];
+    const validatorFn = Array.isArray(validdator) ? validdator : [validdator];
+    this.validators = validatorFn.map(fn => fn());
   }
 }
 class MiniJsFormValidaion {
   form = null;
   prefix = "md-";
-  formObjReplicateWithControls = {};
   formObj = {};
   constructor({ prefix = "md-", selector = "form" } = {}) {
     this.prefix = prefix;
@@ -85,11 +85,6 @@ class MiniJsFormValidaion {
   buildControls(formControls = {}, options = {}) {
     const objKey = this.form.getAttribute("formGroup");
     this.objKey = objKey;
-    this.formObjReplicateWithControls = {
-      [objKey]: {
-        controls: {},
-      },
-    };
 
     this.generateObjectFromControls(this.formObj[this.objKey], formControls)
     
@@ -188,8 +183,8 @@ class MiniJsFormValidaion {
       custom: false
 
     }
-    for(let validation of validationObj) {
-      const validatorProp = validation();
+    for(let validatorProp of validationObj) {
+      // const validatorProp = validation();
       switch (validatorProp?.name) {
         case "required":
           if(ele.getAttribute("type") == 'checkbox' && !ele.checked) {
@@ -376,5 +371,6 @@ class MiniJsFormValidaion {
       }
     }
     this.formObj = this.buildControls(obj, options);
+    this[this.objKey] = this.formObj[this.objKey]
   }
 }

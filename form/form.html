@@ -84,8 +84,10 @@
                
 
                 <div formGroupName="city">
-                  <input type="text"  formControlName="name">
-                  <input type="text" formControlName="place">
+                  <input type="text"  formControlName="name"><br>
+                  <span   md-text="myForm.controls.city.controls.name.error"></span><br>
+                  <input type="text" formControlName="place"><br>
+                  <span md-text="myForm.controls.city.controls.place.error"></span><br>
                 </div>
                 
                 <button id="submit" md-enabled="myForm.valid" type="button">Submit</button>
