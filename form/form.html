@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example of Loop</title>
+    <script src="../plugin/observable-slim.js"></script>
+    <script src="../js/MiniJs.js"></script>
+    <script src="../js/MiniJsForm.js"></script>
+    <script src="form.js" defer></script>
+    <style>
+      .grid-2 {
+        display: grid;
+        /* grid-template-columns: 1fr 1fr; */
+        gap: 20px;
+      }
+      .error {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-2">
+        <div class="registration">
+            <form id="my-form" formGroup="myForm">
+              <div class="form-group" >
+                <label for="fname">Name:</label><br>
+                <input formControlName="name" type="text" class="form-control" required><br>
+                <div md-class="success=myForm.controls.name.valid;error=!myForm.controls.name.valid"  md-text="valid: {{myForm.controls.name.valid}}"></div>
+                <!-- <span md-if="!myForm.controls.name.valid">Custom Error</span> -->
+                <span    md-if="myForm.controls.name.errors.required && myForm.controls.name.touched">Required: - Reqired Field</span>
+                <span   md-if="myForm.controls.name.errors.minLength && myForm.controls.name.touched">MinLength: - Min Length Field</span>
+                <span   md-if="myForm.controls.name.errors.maxLength && myForm.controls.name.touched">MaxLength: - max length Field</span>
+              </div>
+              <div class="form-group">
+                <label for="Email">Email</label><br>
+                <input formControlName="email" type="text" class="form-control"><br>
+                <div md-class="success=myForm.controls.email.valid;error=!myForm.controls.email.valid"   md-text="myForm.controls.email.valid"></div>
+                <span   md-text="myForm.controls.email.error"></span><br>
+                <span   md-if="myForm.controls.email.errors.pattern">Invalid Email</span>
+              </div>
+              <div class="form-group">
+                <label for="age">Age</label><br>
+                <input formControlName="age" type="number" class="form-control"><br>
+                <div md-class="success=myForm.controls.age.valid;error=!myForm.controls.age.valid"   md-text="myForm.controls.age.valid"></div>
+                <span   md-text="myForm.controls.age.error"></span>
+                <span   md-if="myForm.controls.age.errors.min">Min Age, 18 is allowed</span>
+                <span   md-if="myForm.controls.age.errors.max">Max Age, 55 is allowed</span>
+              </div>
+                <!-- <div class="form-group">
+                  <input type="checkbox" name="hobby" md-input="person.hobbies.0" value="online"><label>Onine Game</label><br>
+                  <input type="checkbox" name="hobby" md-input="person.hobbies.1" value="ofline"><label>Offline Game</label><br>
+                </div> -->
+               
+                <div class="form-group">
+                  <label for="gender">Geneder </label>
+                  <input type="radio" value="male" id="gender" name="gender" formControlName="gender"> Male
+                  <input type="radio" value="female" id="gender" name="gender" formControlName="gender"> Female
+                  <span md-class="success=myForm.controls.gender.valid;error=!myForm.controls.gender.valid"    md-text="myForm.controls.gender.error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="isMarried">Married </label>
+                  <input type="checkbox" id="isMarried" name="isMarried" value="true" formControlName="isMarried">
+                  <span md-class="success=myForm.controls.isMarried.valid;error=!myForm.controls.isMarried.valid"  md-text="myForm.controls.isMarried.error"></span>
+                </div>
+                <div class="form-group">
+                  <select formControlName="group" md-input="person.group">
+                    <option value="">Select</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                  </select>
+                  <div md-class="success=myForm.controls.group.valid;error=!myForm.controls.group.valid"  md-text="myForm.controls.group.valid"></div>
+                 <span   md-text="myForm.controls.group.error"></span>
+                </div>
+                <!-- <input type="radio" name="gender" md-input="person.gender" value="female"><input type="radio" name="gender" md-input="person.gender" value="male"><br><div md-text="person.gender"></div> -->
+               
+
+                <div formGroupName="city">
+                  <input type="text"  formControlName="name"><br>
+                  <span   md-text="myForm.controls.city.controls.name.error"></span><br>
+                  <input type="text" formControlName="place"><br>
+                  <span md-text="myForm.controls.city.controls.place.error"></span><br>
+                </div>
+                
+                <button id="submit" md-enabled="myForm.valid" type="button">Submit</button>
+              </form>
+              <div md-text="outputPayload"></div>
+        </div>
+      <!-- <div>
+        <h1>Js code for the same</h1>
+        <pre>
+          const formInstance = new MiniJsFormValidaion();
+          formInstance.buildForm({
+              name: new FormControl("te", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
+              isMarried: new FormControl("", [Validators.required]),
+              age: new FormControl("", [Validators.required, Validators.min(18), Validators.max(55)]),
+              gender: new FormControl("male", Validators.required),
+              email: new FormControl("", [Validators.required, Validators.pattern("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")]),
+              group: new FormControl("4", [Validators.required, Validators.customValidation((value) => {
+                  if(value ==2) {
+                      return {error: true, msg: "2 can't be selected"}
+                  }
+                  return {error: false}
+              })]),
+              city: {
+                  name: new FormControl("blr", [Validators.required]),
+                  place: new FormControl("",  [Validators.required])
+              }
+          });
+          
+          
+        </pre>
+      </div> -->
+    </div>
+   
+  </body>
+</html>
+

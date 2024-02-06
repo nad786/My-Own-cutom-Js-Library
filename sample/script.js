@@ -24,4 +24,6 @@
 
 // const o = MiniJs.create(new A());
 // o.initEvents();
-const o = MiniJs.create({num: 1});
+const o = MiniJs.create({list: [{val: "Hi"}, {val: ""}, {val: "Hello"}], username: "nad"}, {prefix: "nadeem-"});
+
+MiniJs.formValidation({obj: o});

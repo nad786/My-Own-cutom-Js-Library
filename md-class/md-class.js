@@ -7,7 +7,9 @@ const instance = MiniJs.create({
 console.timeEnd("minijs")
 
 
-
+document.getElementById("show-hide").addEventListener("click", (e) => {
+    instance.display = instance.display == 'show' ? "hide" : 'show';
+})
 document.getElementById("toggle").addEventListener("click", (e) => {
     instance.active = !instance.active
 })
