@@ -118,9 +118,9 @@ class MiniJsFormValidaion {
           validators: formControls[key].validators,
         };
         //update key for input events
-        const currentPath = (selector ? selector + "." : "") + `${this.objKey}.controls.${key}.value`;
+        const currentPath = `${objSelector}.${key}.value`;
         this.allControlKeysForEvent.push({currentPath, newValue: formControls[key].value});
-        
+
         // const elements = this.form.querySelectorAll(`${selector ? selector :"div:not([formGroupName])"}  [formControlName="${key}"]`);
         const elements = document.querySelectorAll(
           `form[formGroup="${this.objKey}"] ${
@@ -347,7 +347,7 @@ class MiniJsFormValidaion {
           if (typeof cbResponse == "boolean") {
             cbResponse = {
               error: cbResponse,
-              msg: "Custom validation failed",
+              msg: cbResponse ? "" : "Custom validation failed",
             };
           } else if (typeof cbResponse == "string") {
             cbResponse = {
