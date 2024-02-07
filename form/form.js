@@ -1,8 +1,7 @@
 const varName = "Test";
 console.time("form");
 
-const formInstance = new MiniJsFormValidaion();
-formInstance.buildForm({
+const formInstance = MiniJsFormValidaion.buildForm({
     name: new FormControl("te", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
     isMarried: new FormControl("", [Validators.required]),
     age: new FormControl("", [Validators.required, Validators.min(18), Validators.max(55)]),

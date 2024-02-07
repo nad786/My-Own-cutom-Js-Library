@@ -12,6 +12,18 @@ class MiniJs {
     this.prefix = prefix;
   }
 
+  //common Operation
+  init(obj) {
+    // this.mappedActionForPerformance(obj);
+    const data = this.generateDefaultObjectType(obj);
+    data.forEach((item) => {
+      this.allKey.push(item.currentPath);
+    });
+    this.initForLoop(obj);
+    this.performOperation(data);
+    this.initInputChanges(data);
+  }
+
   detectChanges(data) {
     let nonPrimitiveData = data.filter(
       (item) => typeof item.newValue == "object" && item.newValue != null
@@ -53,17 +65,7 @@ class MiniJs {
     }
   }
 
-  //common Operation
-  init(obj) {
-    // this.mappedActionForPerformance(obj);
-    const data = this.generateDefaultObjectType(obj);
-    data.forEach((item) => {
-      this.allKey.push(item.currentPath);
-    });
-    this.initForLoop(obj);
-    this.performOperation(data);
-    this.initInputChanges(data);
-  }
+  
 
   initClassAndAttributeValue() {
     this.container.querySelectorAll();
@@ -426,12 +428,34 @@ class MiniJs {
     attrArr.forEach((item) => {
       obj = obj?.[item];
     });
-    if (e.target.type == "checkbox" || e.target.type == "radio") {
+    if (e.target.type == "radio" || e.target.type == "checkbox") {
+
+      //single checkbox then value as string if multiple then value as array of ftring
+      const selector = `[${this.prefix}input="${e.target.getAttribute(this.prefix + "input")}"]`;
+      if(e.target.type == "checkbox" && this.container.querySelectorAll(selector).length > 1) {
+        if (e.target.checked) {
+          if(!Array.isArray(obj[targetKey])) {
+            obj[targetKey] = [];
+          }
+          obj[targetKey].push(e.target.value);
+        } else {
+          if(obj[targetKey].length) {
+            // const index = obj[targetKey].findIndex(item => item == e.target.value);
+            // obj[targetKey].splice(index, 1);
+            obj[targetKey] = obj[targetKey].filter(item => item != e.target.value);
+          }
+        }
+        return;
+      }
+      
+
       if (e.target.checked) {
         obj[targetKey] = e.target.value;
       } else {
         obj[targetKey] = "";
       }
+    } else if(e.target.type == "checkbox") {
+      
     } else {
       obj[targetKey] = e.target.value;
     }
@@ -442,7 +466,7 @@ class MiniJs {
       this.addFormEventToResetitsValue();
       data.forEach((item) => {
         if (item.property != "length") {
-          if (typeof item.newValue == "object") {
+          if (typeof item.newValue == "object" && !Array.isArray(item.newValue)) {
             const mainKey = item.currentPath;
             const objKeys = this.generateKeyWithDotSeperated(item.newValue);
             objKeys.forEach((key) => {

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JavaScript Form validation</title>
+<script src="../plugin/observable-slim.js"></script>
+<script src="../js/MiniJs.js"></script>
+<script src="../js/MiniJsForm.js"></script>
+<style>
+    body {
+    font-size: 16px;
+    background: #f9f9f9;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+h2 {
+    text-align: center;
+    text-decoration: underline;
+}
+form {
+    width: 300px;
+    background: #fff;
+    padding: 15px 40px 40px;
+    border: 1px solid #ccc;
+    margin: 50px auto 0;
+    border-radius: 5px;
+}
+label {
+    display: block;
+    margin-bottom: 5px
+}
+label i {
+    color: #999;
+    font-size: 80%;
+}
+input, select {
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 2px;
+}
+.row {
+    padding-bottom: 10px;
+}
+.form-inline {
+    border: 1px solid #ccc;
+    padding: 8px 10px 4px;
+    border-radius: 2px;
+}
+.form-inline label, .form-inline input {
+    display: inline-block;
+    width: auto;
+    padding-right: 15px;
+}
+.error {
+    color: red;
+    font-size: 90%;
+}
+input[type="submit"] {
+    font-size: 110%;
+    font-weight: 100;
+    background: #006dcc;
+    border-color: #016BC1;
+    box-shadow: 0 3px 0 #0165b6;
+    color: #fff;
+    margin-top: 10px;
+    cursor: pointer;
+}
+input[type="submit"]:hover {
+    background: #0165b6;
+}
+</style>
+</head>
+<body>
+<form name="contactForm" formGroup="contactForm">
+    <h2>Application Form</h2>
+    <div class="row">
+        <label>Full Name</label>
+        <input formControlName="name" type="text" name="name">
+        <div class="error" md-text="contactForm.controls.name.error"></div>
+    </div>
+    <div class="row">
+        <label>Email Address</label>
+        <input type="text" formControlName="email" name="email">
+        <div class="error" md-text="contactForm.controls.email.error"></div>
+    </div>
+    <div class="row">
+        <label>Mobile Number</label>
+        <input type="text" formControlName="mobile" name="mobile" maxlength="10">
+        <div class="error" md-text="contactForm.controls.mobile.error"></div>
+    </div>
+    <div class="row">
+        <label>Country</label>
+        <select name="country" formControlName="country">
+            <option>Select</option>
+            <option>Australia</option>
+            <option>India</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+        </select>
+        <div class="error" md-text="contactForm.controls.country.error"></div>
+    </div>
+    <div class="row">
+        <label>Gender</label>
+        <div class="form-inline">
+            <label><input formControlName="gender" type="radio" name="gender" value="male"> Male</label>
+            <label><input type="radio" formControlName="gender" name="gender" value="female"> Female</label>
+        </div>
+        <div class="error" md-text="contactForm.controls.gender.error"></div>
+    </div>
+    <div class="row">
+        <label>Hobbies <i>(Optional)</i></label>
+        <div class="form-inline">
+            <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="sports"> Sports</label>
+            <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="movies"> Movies</label>
+            <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="music"> Music</label>
+        </div>
+    </div>
+    <div class="row">
+        <input type="button" onclick="validateForm()" value="Submit">
+    </div>
+</form>
+
+<script>
+    const formInstance = MiniJsFormValidaion.buildForm({
+    name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
+    email: new FormControl("", [Validators.required, Validators.email]),
+    mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
+        if(value.length != 10) {
+            return "Please enter valid mobile number";
+        }
+        return true;
+    })]),
+    gender: new FormControl("", Validators.required),
+    country: new FormControl("", Validators.required),
+    hobbies: new FormControl(["music", "movies"])
+});
+
+function validateForm() {
+    window.alert(formInstance.getValues());
+}
+</script>
+
+</body>
+</html>
