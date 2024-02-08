@@ -87,7 +87,7 @@ class MiniJsFormValidaion {
 
     this.generateObjectFromControls(this.formObj[this.objKey], formControls);
 
-    this.createMiniJSObj(this.formObj);
+    this.createMiniJSObj(this.formObj, options);
 
     ObservableSlim.observe(this.miniJSInstance.lib, (changes = []) => {
       changes = changes.filter((item) => item.currentPath.endsWith(".value"));
@@ -242,10 +242,10 @@ class MiniJsFormValidaion {
       switch (validatorProp?.name) {
         case "required":
           if (ele.getAttribute("type") == "checkbox" && !ele.checked) {
-            ele.setCustomValidity("Field is mandatory");
+            ele.setCustomValidity("Mandatory Field");
             error = true;
             targetObj.valid = false;
-            targetObj.error = "Field is mandatory";
+            targetObj.error = "Mandatory Field";
             targetObj.errors["required"] = true;
             return;
           }
@@ -259,19 +259,19 @@ class MiniJsFormValidaion {
               }
             });
             if (!flag) {
-              ele.setCustomValidity("Field is mandatory");
+              ele.setCustomValidity("Mandatory Field");
               error = true;
               targetObj.valid = false;
-              targetObj.error = "Field is mandatory";
+              targetObj.error = "Mandatory Field";
               targetObj.errors["required"] = true;
               return;
             }
           }
           if (!ele.value) {
-            ele.setCustomValidity("Field is mandatory");
+            ele.setCustomValidity("Mandatory Field");
             error = true;
             targetObj.valid = false;
-            targetObj.error = "Field is mandatory";
+            targetObj.error = "Mandatory Field";
             targetObj.errors["required"] = true;
             return;
           }
@@ -432,8 +432,7 @@ class MiniJsFormValidaion {
         controls: {},
       },
     };
-    instance.formObj = instance.buildControls(obj, options);
-    instance[instance.objKey] = instance.formObj[instance.objKey];
-    return instance;
+    instance.formObj = instance.buildControls(obj, {...options, parentSelector: (options?.selector ? options.selector : "form")});
+    return {patchValues: instance.patchValues.bind(instance), getValues: instance.getValues.bind(instance), [instance.objKey]: instance.formObj[instance.objKey]};
   }
 }
