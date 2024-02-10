@@ -112,6 +112,7 @@ class MiniJsFormValidaion {
         obj.controls[key] = {
           valid: true,
           touched: false,
+          dirty: false,
           errors: [],
           value: formControls[key].value,
           error: "",
@@ -152,7 +153,7 @@ class MiniJsFormValidaion {
             } else {
               ele.value = formControls[key]?.value;
             }
-            this.updateTouchedProp(ele, objSelector, key);
+            this.updateTouchednDirtyProp(ele, objSelector, key);
             this.formValidation(
               formControls[key].validators,
               obj.controls[key],
@@ -192,11 +193,8 @@ class MiniJsFormValidaion {
         );
       }
     }
-  }
 
-  getDotSeperatedStringFromObject(obj) {
-    
-    return ;
+    obj.valid = false;    
   }
 
   validateElement(changes = []) {
@@ -379,7 +377,7 @@ class MiniJsFormValidaion {
     this.formObj[this.objKey].valid = this.form.checkValidity();
   }
 
-  updateTouchedProp(ele, objSelector, key) {
+  updateTouchednDirtyProp(ele, objSelector, key) {
     ele.addEventListener("focus", (e) => {
       const obj = this.miniJSInstance.getValueFromkeyWithDot(
         this.formObj,
@@ -387,6 +385,15 @@ class MiniJsFormValidaion {
       );
       obj[key].touched = true;
     });
+
+    ele.addEventListener("keypress", (e) => {
+      const obj = this.miniJSInstance.getValueFromkeyWithDot(
+        this.formObj,
+        objSelector
+      );
+      obj[key].dirty = true;
+    });
+    
   }
 
   createMiniJSObj(obj, rest) {
