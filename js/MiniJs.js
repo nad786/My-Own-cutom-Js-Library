@@ -182,8 +182,8 @@ class MiniJs {
         this.performAttributeAddOpeartaion(item, key);
         this.performTextOperation(item, key);
         this.performInputOperation(item, key);
-        this.performDisabledValue(item);
       }
+      this.performDisabledValue(item);
       this.performClassOpeartion(item, key);
       this.performIfStatementOperation(item, key);
     });
@@ -192,15 +192,21 @@ class MiniJs {
   //md-disabled
   performDisabledValue(item) {
     const elements = this.container.querySelectorAll(
-      `[${this.prefix}enabled="${item.currentPath}"]`
+      `[${this.prefix}disabled*="${item.currentPath}"]`
     );
-    elements.forEach((element) => {
-      if (this.getValueFromkeyWithDot(this.lib, item.currentPath)) {
-        element.disabled = false;
-      } else {
-        element.disabled = true;
-      }
-    });
+    try {
+      elements.forEach((ele) => {
+        let attr = ele.getAttribute(`${this.prefix}disabled`);
+        let func = this.convertStringToFunction(attr);
+        if (func()) {
+          ele.disabled = false;
+        } else {
+          ele.disabled = true;
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   //class operation
@@ -278,29 +284,6 @@ class MiniJs {
     try {
       elements.forEach((ele) => {
         let attr = ele.getAttribute(`${this.prefix}if`);
-        // let arr = attr
-        //   .replaceAll(/[\s+()]/g, "")
-        //   .replaceAll(/(&&|\|\|)/g, "__")
-        //   .replaceAll(/(!*)(=+)/g, "__")
-        //   .split('__')
-        //   .filter(item => item[0] != '"' && item[0] != "'" && isNaN(item))
-        //   .map((item) => {
-        //     if (item[0] == "!") {
-        //       item = item.replaceAll("!", "");
-        //     }
-        //     let val = this.getValueFromkeyWithDot(this.lib, item);
-        //     let varName = item;
-        //     if (item.includes(".")) {
-        //       varName = "fnVar" + this.randomIntFromInterval(1, 1000);
-        //       attr = attr.replaceAll(item, varName);
-        //     }
-        //     if(isNaN(val)) {
-        //       return `${varName}='${val}'`;
-        //     }
-        //     return `${varName}=${val}`;
-        //   });
-        // console.log(arr);
-        // let func = new Function(...arr, `return ${attr}`);
         let func = this.convertStringToFunction(attr);
         const display = ele.getAttribute(`${this.prefix}display`) ?? "initial";
         if (func()) {
@@ -515,8 +498,16 @@ class MiniJs {
           element.tagName == "INPUT" &&
           (!typeattr || (typeattr != "radio" && typeattr != "checkbox"))
         ) {
+          
           element.removeEventListener("keyup", this.processChangeKeyUpEvent.bind(this));
-          element.addEventListener("keyup", this.processChangeKeyUpEvent.bind(this));
+          let timer;
+          element.addEventListener("keyup", (e) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+              this.performInputChangeEvent(e)
+            }, 300);
+          });
+        // }
         } else {
           element.removeEventListener(
             "change",
