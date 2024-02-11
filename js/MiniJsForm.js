@@ -49,18 +49,16 @@ class Validators {
 
   static pattern(regex) {
     return () => {
-     return { name: "pattern",
-      value: regex};
-    }
+      return { name: "pattern", value: regex };
+    };
   }
 
   static custom(cb) {
     return () => {
-      return {name: 'custom', value: cb}
-    }
+      return { name: "custom", value: cb };
+    };
   }
 }
-
 
 class FormControl {
   value = "";
@@ -69,77 +67,134 @@ class FormControl {
   constructor(value, validdator = []) {
     this.value = value;
     const validatorFn = Array.isArray(validdator) ? validdator : [validdator];
-    this.validators = validatorFn.map(fn => fn());
+    this.validators = validatorFn.map((fn) => fn());
   }
 }
 class MiniJsFormValidaion {
   form = null;
   prefix = "md-";
   formObj = {};
+  allControlKeysForEvent = [];
   constructor({ prefix = "md-", selector = "form" } = {}) {
     this.prefix = prefix;
     this.form = document.querySelector(selector);
-    this.objKey = this.form.getAttribute("formGroup")
+    this.objKey = this.form.getAttribute("formGroup");
   }
 
   buildControls(formControls = {}, options = {}) {
     const objKey = this.form.getAttribute("formGroup");
     this.objKey = objKey;
 
-    this.generateObjectFromControls(this.formObj[this.objKey], formControls)
-    
-    this.createMiniJSObj(this.formObj);
+    this.generateObjectFromControls(this.formObj[this.objKey], formControls);
+
+    this.createMiniJSObj(this.formObj, options);
 
     ObservableSlim.observe(this.miniJSInstance.lib, (changes = []) => {
-      changes = changes.filter(item => item.currentPath.endsWith(".value"));
-      if(changes.length) {
+      changes = changes.filter((item) => item.currentPath.endsWith(".value"));
+      if (changes.length) {
         this.validateElement(changes);
       }
     });
     return this.miniJSInstance.lib;
   }
 
-  generateObjectFromControls(obj = {}, formControls = {}, selector = "", objSelector = `${this.objKey}.controls`) {
-   
+  generateObjectFromControls(
+    obj = {},
+    formControls = {},
+    selector = "",
+    objSelector = `${this.objKey}.controls`
+  ) {
     for (let key in formControls) {
       // this.formObjReplicateWithControls[objKey].controls[key] = formControls[key];
 
-      if(formControls[key] instanceof FormControl) {
+      if (formControls[key] instanceof FormControl) {
+        
         obj.controls[key] = {
           valid: true,
           touched: false,
+          dirty: false,
           errors: [],
           value: formControls[key].value,
           error: "",
-          validators: formControls[key].validators
+          validators: formControls[key].validators,
         };
+        //update key for input events
+        const currentPath = `${objSelector}.${key}.value`;
+        this.allControlKeysForEvent.push({currentPath, newValue: formControls[key].value});
+
         // const elements = this.form.querySelectorAll(`${selector ? selector :"div:not([formGroupName])"}  [formControlName="${key}"]`);
-        const elements = document.querySelectorAll(`form[formGroup="${this.objKey}"] ${selector ? selector :":not([formGroupName])"}  [formControlName="${key}"]`)
-        elements.forEach(ele => {
-          ele.setAttribute(
-            `${this.prefix}input`,
-            `${objSelector}.${key}.value`
-          );
-          if(ele.getAttribute('type') == "checkbox" || ele.getAttribute('type') == "radio") {
-            if(formControls[key]?.value == ele.value) {
-              ele.checked = true;
+        const elements = document.querySelectorAll(
+          `form[formGroup="${this.objKey}"] ${
+            selector ? selector : ":not([formGroupName])"
+          }  [formControlName="${key}"]`
+        );
+        if (elements.length) {
+          elements.forEach((ele) => {
+            ele.setAttribute(
+              `${this.prefix}input`,
+              `${objSelector}.${key}.value`
+            );
+            if (ele.getAttribute("type") == "radio") {
+              if (formControls[key]?.value == ele.value) {
+                ele.checked = true;
+              } else {
+                ele.checked = false;
+              }
+            } else if (ele.getAttribute("type") == "checkbox") {
+              let arr = formControls[key]?.value;
+              if (!Array.isArray(arr)) {
+                arr = [arr];
+              }
+              if (arr.includes(ele.value)) {
+                ele.checked = true;
+              } else {
+                ele.checked = false;
+              }
             } else {
-              ele.checked = false;
+              ele.value = formControls[key]?.value;
             }
-          } else {
-            ele.value = formControls[key]?.value;
+            this.updateTouchednDirtyProp(ele, objSelector, key);
+            this.formValidation(
+              formControls[key].validators,
+              obj.controls[key],
+              ele
+            );
+          });
+        } else {
+          console.log("Not Found");
+          const elements = document.querySelectorAll(
+            `form[formGroup="${this.objKey}"] ${
+              selector ? selector : ":not([formGroupName])"
+            }  [formControlName*="${key}"]`
+          );
+          if (elements.length) {
+            formControls[key] = [];
           }
-          this.updateTouchedProp(ele, objSelector, key);
-          this.formValidation(formControls[key].validators, obj.controls[key], ele)
-        });
+          elements.forEach((ele) => {
+            if (ele.getAttribute("type") == "checkbox") {
+              const controlName = ele.getAttribute("formControlName");
+              ele.setAttribute(
+                `${this.prefix}input`,
+                `${objSelector}.${controlName}.value`
+              );
+            }
+          });
+        }
       } else {
         selector += ` [formGroupName="${key}"]`;
         obj.controls[key] = {
-          controls: {}
+          controls: {},
         };
-        this.generateObjectFromControls( obj.controls[key], formControls[key], selector, objSelector + `.${key}.controls`);
+        this.generateObjectFromControls(
+          obj.controls[key],
+          formControls[key],
+          selector,
+          objSelector + `.${key}.controls`
+        );
       }
     }
+
+    obj.valid = false;    
   }
 
   validateElement(changes = []) {
@@ -150,23 +205,21 @@ class MiniJsFormValidaion {
       //   this.formObj,
       //   path.join(".")
       // )?.validators;
-     
+
       const ele = this.form.querySelector(
         `[${this.prefix}input="${item.currentPath}"]`
       );
-      
+
       if (ele) {
         const realObj = this.miniJSInstance.getValueFromkeyWithDot(
           this.miniJSInstance.lib,
           path.join(".")
         );
 
-        if(realObj?.validators?.length) {
+        if (realObj?.validators?.length) {
           this.formValidation(realObj.validators, realObj, ele);
         }
-
       }
-     
     });
   }
 
@@ -180,45 +233,44 @@ class MiniJsFormValidaion {
       min: false,
       max: false,
       pattern: false,
-      custom: false
-
-    }
-    for(let validatorProp of validationObj) {
+      custom: false,
+    };
+    for (let validatorProp of validationObj) {
       // const validatorProp = validation();
       switch (validatorProp?.name) {
         case "required":
-          if(ele.getAttribute("type") == 'checkbox' && !ele.checked) {
-            ele.setCustomValidity("Field is mandatory");
+          if (ele.getAttribute("type") == "checkbox" && !ele.checked) {
+            ele.setCustomValidity("Mandatory Field");
             error = true;
             targetObj.valid = false;
-            targetObj.error = "Field is mandatory";
-            targetObj.errors['required'] = true
-          return;
-        }
-         if(ele.getAttribute("type") == 'radio') {
-          const name = ele.getAttribute('name');
-          const allRadioButton = this.form.elements[name];
-          let flag = false;
-          allRadioButton.forEach(radioBtn => {
-            if(radioBtn.checked) {
-              flag = true;
-            }
-          })
-          if(!flag) {
-            ele.setCustomValidity("Field is mandatory");
-            error = true;
-            targetObj.valid = false;
-            targetObj.error = "Field is mandatory";
-            targetObj.errors['required'] = true
+            targetObj.error = "Mandatory Field";
+            targetObj.errors["required"] = true;
             return;
           }
-          
-        } if (!ele.value ) {
-            ele.setCustomValidity("Field is mandatory");
+          if (ele.getAttribute("type") == "radio") {
+            const name = ele.getAttribute("name");
+            const allRadioButton = this.form.elements[name];
+            let flag = false;
+            allRadioButton.forEach((radioBtn) => {
+              if (radioBtn.checked) {
+                flag = true;
+              }
+            });
+            if (!flag) {
+              ele.setCustomValidity("Mandatory Field");
+              error = true;
+              targetObj.valid = false;
+              targetObj.error = "Mandatory Field";
+              targetObj.errors["required"] = true;
+              return;
+            }
+          }
+          if (!ele.value) {
+            ele.setCustomValidity("Mandatory Field");
             error = true;
             targetObj.valid = false;
-            targetObj.error = "Field is mandatory";
-            targetObj.errors['required'] = true
+            targetObj.error = "Mandatory Field";
+            targetObj.errors["required"] = true;
             return;
           }
           break;
@@ -228,7 +280,7 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = `Min Length is ${validatorProp.value}`;
-            targetObj.errors['minLength'] = true
+            targetObj.errors["minLength"] = true;
             return;
           }
           break;
@@ -238,121 +290,140 @@ class MiniJsFormValidaion {
             error = true;
             targetObj.valid = false;
             targetObj.error = `Max Length is ${validatorProp.value}`;
-            targetObj.errors['maxLength'] = true
+            targetObj.errors["maxLength"] = true;
             return;
           }
           break;
 
-          case "pattern":
+        case "pattern":
           if (!new RegExp(validatorProp.value).test(ele.value)) {
             ele.setCustomValidity(`Pattern mismatch`);
             error = true;
             targetObj.valid = false;
             targetObj.error = `Pattern mismatch`;
-            targetObj.errors['pattern'] = true
+            targetObj.errors["pattern"] = true;
             return;
           }
           break;
 
-          case "min":
-            if (parseInt(ele.value) <= validatorProp.value) {
-              ele.setCustomValidity(`Min value is ${validatorProp.value}`);
-              error = true;
-              targetObj.valid = false;
-              targetObj.error = `Min value is ${validatorProp.value}`;
-              targetObj.errors['min'] = true
-              return;
-            }
-            break;
-            case "max":
-              if (parseInt(ele.value) >= validatorProp.value) {
-                ele.setCustomValidity(`Max value is ${validatorProp.value}`);
-                error = true;
-                targetObj.valid = false;
-                targetObj.error = `Max value is ${validatorProp.value}`;
-                targetObj.errors['max'] = true
-                return;
-              }
-              break;
-            case "email":
-              if(!String(ele.value)
+        case "min":
+          if (parseInt(ele.value) <= validatorProp.value) {
+            ele.setCustomValidity(`Min value is ${validatorProp.value}`);
+            error = true;
+            targetObj.valid = false;
+            targetObj.error = `Min value is ${validatorProp.value}`;
+            targetObj.errors["min"] = true;
+            return;
+          }
+          break;
+        case "max":
+          if (parseInt(ele.value) >= validatorProp.value) {
+            ele.setCustomValidity(`Max value is ${validatorProp.value}`);
+            error = true;
+            targetObj.valid = false;
+            targetObj.error = `Max value is ${validatorProp.value}`;
+            targetObj.errors["max"] = true;
+            return;
+          }
+          break;
+        case "email":
+          if (
+            !String(ele.value)
               .toLowerCase()
-              .match(
-                /^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/
-              )) {
-                ele.setCustomValidity(`Invalid Email`);
-                error = true;
-                targetObj.valid = false;
-                targetObj.error = `Invalid Email`;
-                targetObj.errors['email'] = true
-                return;
-              }
-              break;
+              .match(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/)
+          ) {
+            ele.setCustomValidity(`Invalid Email`);
+            error = true;
+            targetObj.valid = false;
+            targetObj.error = `Invalid Email`;
+            targetObj.errors["email"] = true;
+            return;
+          }
+          break;
         default:
           let cbResponse = validatorProp.value(ele.value);
-          if(typeof cbResponse == 'boolean') {
+          if (typeof cbResponse == "boolean") {
             cbResponse = {
               error: cbResponse,
-              msg: "Custom validation failed"
-            }
-          } else if(typeof cbResponse == 'string') {
+              msg: cbResponse ? "" : "Custom validation failed",
+            };
+          } else if (typeof cbResponse == "string") {
             cbResponse = {
               error: !!cbResponse,
-              msg: cbResponse
-            }
+              msg: cbResponse,
+            };
           }
-          if(cbResponse.error) {
-            ele.setCustomValidity(cbResponse?.msg ? cbResponse?.msg: "Error");
+          if (cbResponse.error) {
+            ele.setCustomValidity(cbResponse?.msg ? cbResponse?.msg : "Error");
             error = true;
             targetObj.valid = false;
             targetObj.error = cbResponse?.msg;
-            targetObj.errors["custom"] = true 
+            targetObj.errors["custom"] = true;
           }
       }
-    };
+    }
     if (!error) {
-      if(ele.getAttribute("type") == 'radio') {
-        const name = ele.getAttribute('name');
+      if (ele.getAttribute("type") == "radio") {
+        const name = ele.getAttribute("name");
         const allRadioButton = this.form.elements[name];
-        allRadioButton.forEach(ele => {
+        allRadioButton.forEach((ele) => {
           ele.setCustomValidity("");
-        })
+        });
       }
-        ele.setCustomValidity("");
-        targetObj.valid = true;
-        targetObj.error = "";
-        
+      ele.setCustomValidity("");
+      targetObj.valid = true;
+      targetObj.error = "";
     }
     this.formObj[this.objKey].valid = this.form.checkValidity();
   }
 
-  updateTouchedProp(ele, objSelector, key) {
+  updateTouchednDirtyProp(ele, objSelector, key) {
     ele.addEventListener("focus", (e) => {
-      const obj = this.miniJSInstance.getValueFromkeyWithDot(this.formObj, objSelector)
+      const obj = this.miniJSInstance.getValueFromkeyWithDot(
+        this.formObj,
+        objSelector
+      );
       obj[key].touched = true;
-    })
+    });
+
+    ele.addEventListener("keypress", (e) => {
+      const obj = this.miniJSInstance.getValueFromkeyWithDot(
+        this.formObj,
+        objSelector
+      );
+      obj[key].dirty = true;
+    });
+    
   }
 
   createMiniJSObj(obj, rest) {
     this.miniJSInstance = new MiniJs(obj, rest);
-    this.miniJSInstance.init(obj);
+    const data = this.miniJSInstance.generateDefaultObjectType(obj);
+
+    // this.initForLoop(obj);
+    this.miniJSInstance.performOperation(data);
+    this.miniJSInstance.initInputChanges(this.allControlKeysForEvent);
   }
 
   getValues(obj = this.formObj[this.objKey].controls) {
     const result = {};
-    for(let key in obj) {
-      if(obj[key]?.controls) {
+    for (let key in obj) {
+      if (obj[key]?.controls) {
         result[key] = this.getValues(obj[key].controls);
       } else {
-        result[key] = obj[key].value;
+        if (Array.isArray(obj[key].value)) {
+          result[key] = [...obj[key].value];
+        } else {
+          result[key] = obj[key].value;
+        }
       }
     }
     return result;
   }
 
   patchValues(obj = {}, formObj = this.formObj[this.objKey]) {
-    for(let key in obj) {
-      if(typeof obj[key] == 'object') {
+    for (let key in obj) {
+      if (typeof obj[key] == "object") {
         this.patchValues(obj[key], formObj.controls[key]);
       } else {
         formObj.controls[key].value = obj[key];
@@ -360,17 +431,15 @@ class MiniJsFormValidaion {
     }
   }
 
-  buildForm(obj, options = {}) {
+  static buildForm(obj, options = {}) {
     // const instance = new MiniJsFormValidaion(options);
-
-    this.formObj = {
-      [this.objKey] : {
-        controls: {
-
-        }
-      }
-    }
-    this.formObj = this.buildControls(obj, options);
-    this[this.objKey] = this.formObj[this.objKey]
+    const instance = new MiniJsFormValidaion();
+    instance.formObj = {
+      [instance.objKey]: {
+        controls: {},
+      },
+    };
+    instance.formObj = instance.buildControls(obj, {...options, parentSelector: (options?.selector ? options.selector : "form")});
+    return {patchValues: instance.patchValues.bind(instance), getValues: instance.getValues.bind(instance), [instance.objKey]: instance.formObj[instance.objKey]};
   }
 }

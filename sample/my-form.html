@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>JavaScript Form validation</title>
-<script src="./plugin/observable-slim.js"></script>
-<script src="./js/MiniJs.js"></script>
-<script src="./js/MiniJsForm.js"></script>
+<script src="../plugin/observable-slim.js"></script>
+<script src="../js/MiniJs.js"></script>
+<script src="../js/MiniJsForm.js"></script>
 <style>
     body {
     font-size: 16px;
@@ -118,7 +118,7 @@ input[type="submit"]:hover {
         </div>
     </div>
     <div class="row">
-        <input type="button" md-disabled="contactForm.valid" onclick="validateForm()" value="Submit">
+        <input type="button" onclick="validateForm()" value="Submit">
     </div>
 </form>
 
@@ -130,7 +130,7 @@ input[type="submit"]:hover {
         if(value.length != 10) {
             return "Please enter valid mobile number";
         }
-        return "";
+        return true;
     })]),
     gender: new FormControl("", Validators.required),
     country: new FormControl("", Validators.required),

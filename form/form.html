@@ -32,9 +32,9 @@
                 <input formControlName="name" type="text" class="form-control" required><br>
                 <div md-class="success=myForm.controls.name.valid;error=!myForm.controls.name.valid"  md-text="valid: {{myForm.controls.name.valid}}"></div>
                 <!-- <span md-if="!myForm.controls.name.valid">Custom Error</span> -->
-                <span    md-if="myForm.controls.name.errors.required && myForm.controls.name.touched">Required: - Reqired Field</span>
-                <span   md-if="myForm.controls.name.errors.minLength && myForm.controls.name.touched">MinLength: - Min Length Field</span>
-                <span   md-if="myForm.controls.name.errors.maxLength && myForm.controls.name.touched">MaxLength: - max length Field</span>
+                <span    md-if="myForm.controls.name.errors.required">Required: - Reqired Field</span>
+                <span   md-if="myForm.controls.name.errors.minLength">MinLength: - Min Length Field</span>
+                <span   md-if="myForm.controls.name.errors.maxLength">MaxLength: - max length Field</span>
               </div>
               <div class="form-group">
                 <label for="Email">Email</label><br>
@@ -47,8 +47,8 @@
                 <label for="age">Age</label><br>
                 <input formControlName="age" type="number" class="form-control"><br>
                 <div md-class="success=myForm.controls.age.valid;error=!myForm.controls.age.valid"   md-text="myForm.controls.age.valid"></div>
-                <span   md-text="myForm.controls.age.error"></span>
-                <span   md-if="myForm.controls.age.errors.min">Min Age, 18 is allowed</span>
+                <span   md-text="myForm.controls.age.error"></span><br>
+                <span   md-if="myForm.controls.age.errors.min">Min Age, 18 is allowed</span><br>  
                 <span   md-if="myForm.controls.age.errors.max">Max Age, 55 is allowed</span>
               </div>
                 <!-- <div class="form-group">

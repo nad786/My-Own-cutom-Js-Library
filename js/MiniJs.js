@@ -12,6 +12,18 @@ class MiniJs {
     this.prefix = prefix;
   }
 
+  //common Operation
+  init(obj) {
+    // this.mappedActionForPerformance(obj);
+    const data = this.generateDefaultObjectType(obj);
+    data.forEach((item) => {
+      this.allKey.push(item.currentPath);
+    });
+    this.initForLoop(obj);
+    this.performOperation(data);
+    this.initInputChanges(data);
+  }
+
   detectChanges(data) {
     let nonPrimitiveData = data.filter(
       (item) => typeof item.newValue == "object" && item.newValue != null
@@ -53,17 +65,7 @@ class MiniJs {
     }
   }
 
-  //common Operation
-  init(obj) {
-    // this.mappedActionForPerformance(obj);
-    const data = this.generateDefaultObjectType(obj);
-    data.forEach((item) => {
-      this.allKey.push(item.currentPath);
-    });
-    this.initForLoop(obj);
-    this.performOperation(data);
-    this.initInputChanges(data);
-  }
+  
 
   initClassAndAttributeValue() {
     this.container.querySelectorAll();
@@ -180,8 +182,8 @@ class MiniJs {
         this.performAttributeAddOpeartaion(item, key);
         this.performTextOperation(item, key);
         this.performInputOperation(item, key);
-        this.performDisabledValue(item);
       }
+      this.performDisabledValue(item);
       this.performClassOpeartion(item, key);
       this.performIfStatementOperation(item, key);
     });
@@ -190,15 +192,21 @@ class MiniJs {
   //md-disabled
   performDisabledValue(item) {
     const elements = this.container.querySelectorAll(
-      `[${this.prefix}enabled="${item.currentPath}"]`
+      `[${this.prefix}disabled*="${item.currentPath}"]`
     );
-    elements.forEach((element) => {
-      if (this.getValueFromkeyWithDot(this.lib, item.currentPath)) {
-        element.disabled = false;
-      } else {
-        element.disabled = true;
-      }
-    });
+    try {
+      elements.forEach((ele) => {
+        let attr = ele.getAttribute(`${this.prefix}disabled`);
+        let func = this.convertStringToFunction(attr);
+        if (func()) {
+          ele.disabled = false;
+        } else {
+          ele.disabled = true;
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   //class operation
@@ -276,29 +284,6 @@ class MiniJs {
     try {
       elements.forEach((ele) => {
         let attr = ele.getAttribute(`${this.prefix}if`);
-        // let arr = attr
-        //   .replaceAll(/[\s+()]/g, "")
-        //   .replaceAll(/(&&|\|\|)/g, "__")
-        //   .replaceAll(/(!*)(=+)/g, "__")
-        //   .split('__')
-        //   .filter(item => item[0] != '"' && item[0] != "'" && isNaN(item))
-        //   .map((item) => {
-        //     if (item[0] == "!") {
-        //       item = item.replaceAll("!", "");
-        //     }
-        //     let val = this.getValueFromkeyWithDot(this.lib, item);
-        //     let varName = item;
-        //     if (item.includes(".")) {
-        //       varName = "fnVar" + this.randomIntFromInterval(1, 1000);
-        //       attr = attr.replaceAll(item, varName);
-        //     }
-        //     if(isNaN(val)) {
-        //       return `${varName}='${val}'`;
-        //     }
-        //     return `${varName}=${val}`;
-        //   });
-        // console.log(arr);
-        // let func = new Function(...arr, `return ${attr}`);
         let func = this.convertStringToFunction(attr);
         const display = ele.getAttribute(`${this.prefix}display`) ?? "initial";
         if (func()) {
@@ -426,12 +411,34 @@ class MiniJs {
     attrArr.forEach((item) => {
       obj = obj?.[item];
     });
-    if (e.target.type == "checkbox" || e.target.type == "radio") {
+    if (e.target.type == "radio" || e.target.type == "checkbox") {
+
+      //single checkbox then value as string if multiple then value as array of ftring
+      const selector = `[${this.prefix}input="${e.target.getAttribute(this.prefix + "input")}"]`;
+      if(e.target.type == "checkbox" && this.container.querySelectorAll(selector).length > 1) {
+        if (e.target.checked) {
+          if(!Array.isArray(obj[targetKey])) {
+            obj[targetKey] = [];
+          }
+          obj[targetKey].push(e.target.value);
+        } else {
+          if(obj[targetKey].length) {
+            // const index = obj[targetKey].findIndex(item => item == e.target.value);
+            // obj[targetKey].splice(index, 1);
+            obj[targetKey] = obj[targetKey].filter(item => item != e.target.value);
+          }
+        }
+        return;
+      }
+      
+
       if (e.target.checked) {
         obj[targetKey] = e.target.value;
       } else {
         obj[targetKey] = "";
       }
+    } else if(e.target.type == "checkbox") {
+      
     } else {
       obj[targetKey] = e.target.value;
     }
@@ -442,7 +449,7 @@ class MiniJs {
       this.addFormEventToResetitsValue();
       data.forEach((item) => {
         if (item.property != "length") {
-          if (typeof item.newValue == "object") {
+          if (typeof item.newValue == "object" && !Array.isArray(item.newValue)) {
             const mainKey = item.currentPath;
             const objKeys = this.generateKeyWithDotSeperated(item.newValue);
             objKeys.forEach((key) => {
@@ -491,8 +498,16 @@ class MiniJs {
           element.tagName == "INPUT" &&
           (!typeattr || (typeattr != "radio" && typeattr != "checkbox"))
         ) {
+          
           element.removeEventListener("keyup", this.processChangeKeyUpEvent.bind(this));
-          element.addEventListener("keyup", this.processChangeKeyUpEvent.bind(this));
+          let timer;
+          element.addEventListener("keyup", (e) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+              this.performInputChangeEvent(e)
+            }, 300);
+          });
+        // }
         } else {
           element.removeEventListener(
             "change",
