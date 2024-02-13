@@ -6,7 +6,7 @@ class MiniJs {
   container = document;
   allKey = [];
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", prefix = "md-" } = rest;
+    const { parentSelector = "html", prefix = "wns-" } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.prefix = prefix;
@@ -189,7 +189,7 @@ class MiniJs {
     });
   }
 
-  //md-disabled
+  //wns-disabled
   performDisabledValue(item) {
     const elements = this.container.querySelectorAll(
       `[${this.prefix}disabled*="${item.currentPath}"]`

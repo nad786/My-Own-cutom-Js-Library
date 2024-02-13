@@ -127,7 +127,7 @@ input[type="submit"]:hover {
     name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
     email: new FormControl("", [Validators.required, Validators.email]),
     mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
-        if(value.length != 10) {
+        if(value.length != 10 || isNaN(value) || !value.startsWith("9")) {
             return "Please enter valid mobile number";
         }
         return "";

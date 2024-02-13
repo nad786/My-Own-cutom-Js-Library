@@ -72,10 +72,10 @@ class FormControl {
 }
 class MiniJsFormValidaion {
   form = null;
-  prefix = "md-";
+  prefix = "wns-";
   formObj = {};
   allControlKeysForEvent = [];
-  constructor({ prefix = "md-", selector = "form" } = {}) {
+  constructor({ prefix = "wns-", selector = "form" } = {}) {
     this.prefix = prefix;
     this.form = document.querySelector(selector);
     this.objKey = this.form.getAttribute("formGroup");
@@ -433,7 +433,7 @@ class MiniJsFormValidaion {
 
   static buildForm(obj, options = {}) {
     // const instance = new MiniJsFormValidaion(options);
-    const instance = new MiniJsFormValidaion();
+    const instance = new MiniJsFormValidaion(options);
     instance.formObj = {
       [instance.objKey]: {
         controls: {},

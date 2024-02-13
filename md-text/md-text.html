@@ -11,7 +11,7 @@
     <style>
       .grid-2 {
         display: grid;
-        grid-template-columns: 300px 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
       }
     </style>
@@ -19,27 +19,39 @@
   <body>
     <div class="grid-2">
         <div>
-            <h1 md-text="Hi {{header1}} {{header2}}"></h1>
-            <h2 md-text="header2"></h2>
-            <h3 md-text="Hi {{header3}}"></h3>
-            <h4 md-text="Hi {{header4}}"></h4>
+          <select id="select-day">
+            <option>Yearly</option>
+            <option>Monthly</option>
+            <option>Daily</option>
+         </select>
+            <h3 wns-text="frequency"></h3>
+            <h3 wns-text="{{frequency}}"></h3>
+            <h3 wns-text="partially text '{{frequency}}'"></h3>
+            <h3 wns-text="In Between Changed '{{frequency}}' Middle"></h3>
         </div>
       <div>
         <h1>Html code for same</h1>
         <pre>
-&#60;h1 md-text="Hi {{header1}} {{header2}}"></h1>
-&#60;h2 md-text="header2"></h2>
-&#60;h3 md-text="Hi {{header3}}"></h3>
-&#60;h4 md-text="Hi {{header4}}"></h4>
+&#60;select id="select-day">
+  &#60;option>Yearly&#60;/option>
+  &#60;option>Monthly&#60;/option>
+  &#60;option>Daily&#60;/option>
+&#60;/select>
+&#60;div class="frequency-details">
+  &#60;h3 wns-text="frequency">Yearly&#60;/h3>
+  &#60;h3 wns-text="{{frequency}}">Monthly&#60;/h3>
+  &#60;h3 wns-text="partially text '{{frequency}}'">Daily&#60;/h3>
+  &#60;h3 wns-text="In Between Changed '{{frequency}}' Middle">Daily&#60;/h3>
+&#60;/div>
         </pre>
         <h1>Js code for the same</h1>
         <pre>
 const instance = MiniJs.create({
-  header1: "Header 1", 
-  header2: "Header 2", 
-  header3: "Header 3", 
-  header4: "Header 4"
+    frequency: 'Yearly', 
 });
+document.getElementById("select-day").addEventListener("change", (e) => {
+    instance.frequency = e.target.value;
+})
         </pre>
       </div>
     </div>

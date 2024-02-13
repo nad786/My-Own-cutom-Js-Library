@@ -14,6 +14,12 @@
         grid-template-columns: 1fr 1fr;
         gap: 20px;
       }
+      form#my-form .form-group {
+    border: 1px solid;
+    padding: 10px;
+    background: aliceblue;
+    margin: 10px;
+}
     </style>
   </head>
   <body>
@@ -22,49 +28,73 @@
             <form id="my-form">
               <div class="form-group">
                 <label for="fname">First name:</label><br>
-                <input type="text" class="form-control" required md-input="person.fname"><br>
-                <div md-text="person.fname"></div>
-                <span class="error"></span>
+                <input type="text" class="form-control" required wns-input="person.fname"><br>
+                <div wns-text="person.fname"></div>
               </div>
               <div class="form-group">
                 <label for="lname">Last name:</label><br>
-                <input type="text" class="form-control" required md-input="person.lname"><br>
-                <div md-text="person.lname"></div>
-                <span class="error"></span>
+                <input type="text" class="form-control" required wns-input="person.lname"><br>
+                <div wns-text="person.lname"></div>
               </div>
               <div class="form-group">
                 <label for="Email">Email</label><br>
-                <input pattern="[^\s@]+@[^\s@]+\.[^\s@]+" type="text" class="form-control" md-input="person.email"><br>
-                <div md-text="person.email"></div>
+                <input type="text" class="form-control" wns-input="person.email"><br>
+                <div wns-text="person.email"></div>
                 <span class="error"></span>
               </div>
-                <div class="form-group">
-                  <input type="checkbox" name="hobby" md-input="person.hobbies.0" value="online"><label>Onine Game</label><br>
-                  <input type="checkbox" name="hobby" md-input="person.hobbies.1" value="ofline"><label>Offline Game</label><br>
-                </div>
-               
-                <input type="radio" name="gender" md-input="person.gender" value="female"><input type="radio" name="gender" md-input="person.gender" value="male"><br><div md-text="person.gender"></div>
-                <select md-input="person.group">
-                  <option>Select</option>
-                  <option>1</option>
-                  <option>2</option>
-                  <option>4</option>
-                  <option>5</option>
-                </select><div md-text="person.group"></div>
+             <div class="form-group">
+                <div>Gender</div>
+                Female <input type="radio" name="gender" wns-input="person.gender" value="female"> Male <input type="radio" name="gender" wns-input="person.gender" value="male"><br><div wns-text="person.gender"></div>
+             </div>
+             <div class="form-group">
+              <div>Group</div>
+               <select wns-input="person.group">
+                 <option>Select</option>
+                 <option>1</option>
+                 <option>2</option>
+                 <option>4</option>
+                 <option>5</option>
+               </select>
+               <div wns-text="person.group"></div>
+             </div>
                 <button id="submit" type="button">Submit</button>
               </form>
-              <div md-text="outputPayload"></div>
+              <div wns-text="outputPayload"></div>
         </div>
       <div>
+        <h1>Html Code for same</h1>
+        <pre>
+&#60;div class="form-group">
+  &#60;label for="fname">First name:&#60;/label>
+  &#60;input type="text" class="form-control" required wns-input="person.fname">
+  &#60;div wns-text="person.fname">&#60;/div>
+&#60;/div>
+&#60;div class="form-group">
+  &#60;label for="lname">Last name:&#60;/label>
+  &#60;input type="text" class="form-control" required wns-input="person.lname">
+  &#60;div wns-text="person.lname">&#60;/div>
+&#60;/div>
+&#60;div class="form-group">
+  &#60;label for="Email">Email&#60;/label>
+  &#60;input type="text" class="form-control" wns-input="person.email">
+  &#60;div wns-text="person.email">&#60;/div>
+&#60;/div>
+&#60;div class="form-group">
+  &#60;div>Gender&#60;/div>
+  Female &#60;input type="radio" name="gender" wns-input="person.gender" value="female"> 
+  Male &#60;input type="radio" name="gender" wns-input="person.gender" value="male">
+  &#60;div wns-text="person.gender">&#60;/div>
+&#60;/div>
+        </pre>
         <h1>Js code for the same</h1>
         <pre>
 const instance = MiniJs.create( {
-    person: {fname: "john", lname: 'doe', email: "nad@nad.com", 
-    hobbies: ["online", ""], gender: "male", group: "" },
-    outputPayload: "",
-})
-document.getElementById("submit").addEventListener("click", (e) => {
-    instance.outputPayload = JSON.stringify(instance.person);
+  person: {
+      fname: "john", 
+      lname: 'doe', 
+      email: "nad@nad.com", 
+      gender: "male", 
+      group: "2" },
 })
         </pre>
       </div>
