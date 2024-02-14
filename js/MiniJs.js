@@ -5,15 +5,20 @@ class MiniJs {
   listContainer = {};
   container = document;
   allKey = [];
+  detectValueChanges = {
+
+  };
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", prefix = "wns-" } = rest;
+    const { parentSelector = "html", prefix = "wns-", detectValueChanges = {} } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.prefix = prefix;
+    this.detectValueChanges = detectValueChanges;
   }
 
   //common Operation
   init(obj) {
+    
     // this.mappedActionForPerformance(obj);
     const data = this.generateDefaultObjectType(obj);
     data.forEach((item) => {
@@ -25,6 +30,7 @@ class MiniJs {
   }
 
   detectChanges(data) {
+    let allObjChanges = data;
     let nonPrimitiveData = data.filter(
       (item) => typeof item.newValue == "object" && item.newValue != null
     );
@@ -58,11 +64,14 @@ class MiniJs {
         }
         arr = [...arr, ...item];
       });
-
-      this.performOperation([...arr, ...primitiveData]);
-    } else {
-      this.performOperation(data);
-    }
+      allObjChanges = [...arr, ...primitiveData]
+    } 
+    this.performOperation(allObjChanges);
+    allObjChanges.forEach(item => {
+      if(this.detectValueChanges[item.currentPath]) {
+        this.detectValueChanges[item.currentPath](item.newValue);
+      }
+    })
   }
 
   

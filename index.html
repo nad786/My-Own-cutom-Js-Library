@@ -8,10 +8,11 @@
 <script src="./js/MiniJsForm.js"></script>
 <style>
     body {
-    font-size: 16px;
-    background: #f9f9f9;
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
+        font-size: 16px;
+        background: #f9f9f9;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    }
+
 h2 {
     text-align: center;
     text-decoration: underline;
@@ -182,6 +183,12 @@ const formInstance = MiniJsFormValidaion.buildForm({
     gender: new FormControl("", Validators.required),
     country: new FormControl("", Validators.required),
     hobbies: new FormControl(["music", "movies"])
+}, {
+    detectValueChanges: {
+        "contactForm.controls.name.value": (value) => {
+            console.log("Value changed", value)
+        }
+    }
 });
  
 function validateForm() {
