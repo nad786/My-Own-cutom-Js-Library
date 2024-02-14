@@ -285,7 +285,7 @@ class MiniJs {
       elements.forEach((ele) => {
         let attr = ele.getAttribute(`${this.prefix}if`);
         let func = this.convertStringToFunction(attr);
-        const display = ele.getAttribute(`${this.prefix}display`) ?? "initial";
+        const display = ele.getAttribute(`${this.prefix}display`) ?? "block";
         if (func()) {
           ele.style.display = display;
         } else {
@@ -300,7 +300,7 @@ class MiniJs {
   hideShowELement(item, ele, flag = false) {
     const attr = ele.getAttribute(`${this.prefix}if`);
     if (attr) {
-      const display = ele.getAttribute(`${this.prefix}display`) ?? "initial";
+      const display = ele.getAttribute(`${this.prefix}display`) ?? "block";
       if (attr.includes("=")) {
         const data = this.checkCondition(item, ele, "", attr, false);
         if (data) {
