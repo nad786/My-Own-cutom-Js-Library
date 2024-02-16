@@ -98,9 +98,15 @@ button:disabled,button:disabled:hover {
                 </div>
                 <div class="row">
                     <label>Mobile Number</label>
-                    <input autocomplete="off" type="text" formControlName="mobile" name="mobile" maxlength="10">
+                    <input autocomplete="off" type="text" formControlName="mobile" name="mobile">
                     <div class="error" wns-text="contactForm.controls.mobile.error"></div>
                 </div>
+                <div class="row">
+                    <label>Comment</label>
+                    <textarea autocomplete="off" formControlName="comment"></textarea>
+                    <div class="error" wns-text="contactForm.controls.comment.error"></div>
+                </div>
+
                 <div class="row">
                     <label>Country</label>
                     <select name="country" formControlName="country">
@@ -172,8 +178,9 @@ const formInstance = MiniJsFormValidaion.buildForm({
  
 <script>
     const formInstance = MiniJsFormValidaion.buildForm({
-    name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
+    name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)], "^[a-zA-Z0-9]*$"),
     email: new FormControl("", [Validators.required, Validators.email]),
+    comment: new FormControl("", Validators.required),
     mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
         if(value.length != 10 || isNaN(value) || !value.startsWith("9")) {
             return "Please enter valid mobile number";
@@ -185,11 +192,11 @@ const formInstance = MiniJsFormValidaion.buildForm({
     hobbies: new FormControl(["music", "movies"])
 }, {
     detectValueChanges: {
-        "contactForm.controls.name.value": (value) => {
+        "name": (value) => {
             console.log("Value changed", value)
         }
     }
-});
+}); 
  
 function validateForm() {
     window.alert(JSON.stringify(formInstance.getValues()));
