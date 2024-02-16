@@ -4,13 +4,13 @@ class Validators {
       return { name: "required", value: true };
     };
   }
-
+ 
   static minLength(length) {
     return () => {
       return { name: "minLength", value: length };
     };
   }
-
+ 
   static maxLength(length) {
     return () => {
       return {
@@ -19,7 +19,7 @@ class Validators {
       };
     };
   }
-
+ 
   static get email() {
     return () => {
       return {
@@ -28,7 +28,7 @@ class Validators {
       };
     };
   }
-
+ 
   static min(num) {
     return () => {
       return {
@@ -37,7 +37,7 @@ class Validators {
       };
     };
   }
-
+ 
   static max(num) {
     return () => {
       return {
@@ -46,36 +46,38 @@ class Validators {
       };
     };
   }
-
+ 
   static pattern(regex) {
     return () => {
       return { name: "pattern", value: regex };
     };
   }
-
+ 
   static custom(cb) {
     return () => {
       return { name: "custom", value: cb };
     };
   }
 }
-
+ 
 class FormControl {
   value = "";
   ele = null;
   validators = [];
-  constructor(value, validdator = []) {
+  constructor(value, validdator = [], allowedChar = "") {
     this.value = value;
     const validatorFn = Array.isArray(validdator) ? validdator : [validdator];
     this.validators = validatorFn.map((fn) => fn());
+    this.allowedChar = allowedChar;
   }
 }
 class MiniJsFormValidaion {
   form = null;
-  prefix = "md-";
+  prefix = "wns-";
   formObj = {};
+  detectValueChanges = {};
   allControlKeysForEvent = [];
-  constructor({ prefix = "md-", selector = "form" } = {}) {
+  constructor({ prefix = "wns-", selector = "form" } = {}) {
     this.prefix = prefix;
     this.form = document.querySelector(selector);
     this.objKey = this.form.getAttribute("formGroup");
@@ -84,11 +86,8 @@ class MiniJsFormValidaion {
   buildControls(formControls = {}, options = {}) {
     const objKey = this.form.getAttribute("formGroup");
     this.objKey = objKey;
-
     this.generateObjectFromControls(this.formObj[this.objKey], formControls);
-
     this.createMiniJSObj(this.formObj, options);
-
     ObservableSlim.observe(this.miniJSInstance.lib, (changes = []) => {
       changes = changes.filter((item) => item.currentPath.endsWith(".value"));
       if (changes.length) {
@@ -108,7 +107,6 @@ class MiniJsFormValidaion {
       // this.formObjReplicateWithControls[objKey].controls[key] = formControls[key];
 
       if (formControls[key] instanceof FormControl) {
-        
         obj.controls[key] = {
           valid: true,
           touched: false,
@@ -120,7 +118,10 @@ class MiniJsFormValidaion {
         };
         //update key for input events
         const currentPath = `${objSelector}.${key}.value`;
-        this.allControlKeysForEvent.push({currentPath, newValue: formControls[key].value});
+        this.allControlKeysForEvent.push({
+          currentPath,
+          newValue: formControls[key].value,
+        });
 
         // const elements = this.form.querySelectorAll(`${selector ? selector :"div:not([formGroupName])"}  [formControlName="${key}"]`);
         const elements = document.querySelectorAll(
@@ -130,6 +131,10 @@ class MiniJsFormValidaion {
         );
         if (elements.length) {
           elements.forEach((ele) => {
+            ele.setAttribute(
+              `${this.prefix}allowedChar`,
+              formControls[key].allowedChar
+            );
             ele.setAttribute(
               `${this.prefix}input`,
               `${objSelector}.${key}.value`
@@ -153,7 +158,7 @@ class MiniJsFormValidaion {
             } else {
               ele.value = formControls[key]?.value;
             }
-            this.updateTouchednDirtyProp(ele, objSelector, key);
+            // this.updateTouchednDirtyProp(ele, objSelector, key);
             this.formValidation(
               formControls[key].validators,
               obj.controls[key],
@@ -194,7 +199,7 @@ class MiniJsFormValidaion {
       }
     }
 
-    obj.valid = false;    
+    obj.valid = false;
   }
 
   validateElement(changes = []) {
@@ -374,35 +379,75 @@ class MiniJsFormValidaion {
       targetObj.valid = true;
       targetObj.error = "";
     }
-    this.formObj[this.objKey].valid = this.form.checkValidity();
+    this.formObj[this.objKey].valid = this.form.checkValidity?.();
   }
 
-  updateTouchednDirtyProp(ele, objSelector, key) {
-    ele.addEventListener("focus", (e) => {
-      const obj = this.miniJSInstance.getValueFromkeyWithDot(
-        this.formObj,
-        objSelector
-      );
-      obj[key].touched = true;
-    });
+  addEventListenerToForm() {
+    this.timer = null;
+    this.form.addEventListener("focus", this.boundFormFocusEvent);
+    this.form.addEventListener("keydown", this.boundFormKeyDownEvent);
+    this.form.addEventListener("change",this.boundFormChangeEvent);
+  }
 
-    ele.addEventListener("keypress", (e) => {
-      const obj = this.miniJSInstance.getValueFromkeyWithDot(
-        this.formObj,
-        objSelector
-      );
-      obj[key].dirty = true;
-    });
-    
+  boundFormFocusEvent = this.formFocusEvent.bind(this);
+  boundFormKeyDownEvent = this.formKeyDownEvent.bind(this);
+  boundFormChangeEvent = this.formChangeEvent.bind(this);
+
+  formFocusEvent(e) {
+    const obj = this.getTargetObjectOfFormControlELement(e.target);
+    obj.touched = true;
+  }
+
+  formKeyDownEvent(e) {
+    let allowedChar = e.target.getAttribute(`${this.prefix}allowedChar`);
+    if (allowedChar) {
+      if (allowedChar.startsWith("/")) {
+        allowedChar = allowedChar.substring(1, allowedChar.length - 1);
+      }
+      const regex = new RegExp(allowedChar);
+      if (!regex.test(e.key)) {
+        e.preventDefault();
+        return false;
+      }
+    }
+
+    const obj = this.getTargetObjectOfFormControlELement(e.target);
+    obj.dirty = true;
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      obj.value = e.target.value;
+    }, 300);
+  }
+
+  formChangeEvent(e) {
+    const obj = this.getTargetObjectOfFormControlELement(e.target);
+    obj.dirty = true;
+    obj.value = e.target.value;
+  }
+
+  getTargetObjectOfFormControlELement(ele) {
+    const splittedKey = ele.getAttribute(`${this.prefix}input`).split(".");
+    splittedKey.pop();
+    return this.miniJSInstance.getValueFromkeyWithDot(
+      this.formObj,
+      splittedKey.join(".")
+    );
   }
 
   createMiniJSObj(obj, rest) {
-    this.miniJSInstance = new MiniJs(obj, rest);
+    this.miniJSInstance = new MiniJs(obj, {
+      ...rest,
+      detectValueChanges: this.detectValueChanges,
+    });
     const data = this.miniJSInstance.generateDefaultObjectType(obj);
 
     // this.initForLoop(obj);
     this.miniJSInstance.performOperation(data);
-    this.miniJSInstance.initInputChanges(this.allControlKeysForEvent);
+    // this.miniJSInstance.initInputChanges(this.allControlKeysForEvent);
+  }
+
+  updateControls(obj = {}) {
+    this.generateObjectFromControls(this.formObj[this.objKey], obj);
   }
 
   getValues(obj = this.formObj[this.objKey].controls) {
@@ -431,15 +476,44 @@ class MiniJsFormValidaion {
     }
   }
 
+  updateDetectChanges(obj = {}) {
+    for (let key in obj) {
+      const split = key.split(".");
+      this.detectValueChanges[
+        this.objKey +
+          "." +
+          split.map((item) => `controls.${item}`).join(".") +
+          ".value"
+      ] = obj[key];
+    }
+  }
+
+  destroy() {
+    ObservableSlim.remove(this.formObj);
+    this.form.removeEventListener("focus", this.boundFormFocusEvent);
+    this.form.removeEventListener("keydown", this.boundFormKeyDownEvent);
+    this.form.removeEventListener("change",this.boundFormChangeEvent);
+  }
+
   static buildForm(obj, options = {}) {
-    // const instance = new MiniJsFormValidaion(options);
-    const instance = new MiniJsFormValidaion();
+    const instance = new MiniJsFormValidaion(options);
+    instance.updateDetectChanges(options.detectValueChanges);
+    instance.addEventListenerToForm();
     instance.formObj = {
       [instance.objKey]: {
         controls: {},
       },
     };
-    instance.formObj = instance.buildControls(obj, {...options, parentSelector: (options?.selector ? options.selector : "form")});
-    return {patchValues: instance.patchValues.bind(instance), getValues: instance.getValues.bind(instance), [instance.objKey]: instance.formObj[instance.objKey]};
+    instance.formObj = instance.buildControls(obj, {
+      ...options,
+      parentSelector: options?.selector ? options.selector : "form",
+    });
+    return {
+      patchValues: instance.patchValues.bind(instance),
+      destroy: instance.destroy.bind(instance),
+      updateControls: instance.updateControls.bind(instance),
+      getValues: instance.getValues.bind(instance),
+      [instance.objKey]: instance.formObj[instance.objKey],
+    };
   }
 }

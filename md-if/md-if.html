@@ -14,63 +14,48 @@
         grid-template-columns: 1fr 1fr;
         gap: 20px;
       }
+      pre {
+        font-size: 1rem;
+      }
     </style>
   </head>
   <body>
     <div class="grid-2">
       <div>
-          <!-- <div md-if="key == 'pkg' || display == 'show'">Test show</div>
-          <div md-if="key != 'pkg' && length == 20">Test Hide</div>
-          <div md-if="key">Test key</div>
-          <div md-if="!key">Test !key</div>
-        <div md-if="arr.length">arr.length</div>
-        <div md-if="!arr.length">!arr.length</div> -->
-        <div md-if="!arr.length && userName">obj.key == 'show' nadeem</div>
-        <!-- <div md-if="!arr.length || obj.key !='show' || userName == 'userName'">obj.key != 'show' ujjwal</div> -->
-        <!-- <div md-if="flag || display">flag</div>
-        <div md-if="!flag || display">!flag</div> -->
+         <select id="select-day">
+            <option>Yearly</option>
+            <option>Monthly</option>
+            <option>Daily</option>
+         </select>
+        <div class="frequency-details">
+          <div wns-if="frequency == 'Yearly'">Yearly</div>
+          <div wns-if="frequency == 'Monthly'">Monthly</div>
+          <div wns-if="frequency == 'Daily'">Daily</div>
+        </div>
       </div>
-      <!-- <div>
-            <h1>Hide and show Element with condition</h1>
-          <button id="toggle">Toggle</button>
-          <div md-if="display">First Element Show when display is true</div>
-          <div md-if="!display">Second Element Show when display is false</div>
-
-          <button id="toggle-key">Toggle key == test</button>
-          <div md-if="key == 'test'">key == test</div>
-          <div md-if="key != 'test'">key != test</div>
-          
-          <button id="toggle-test-key">Toggle tes.key == test</button>
-          <div md-if="test.key == 'test'">test.key == test</div>
-          <div md-if="test.key != 'test'">test.key != test</div>
-
-          <button id="toggle-num">Toggle num == 10</button>
-          <div md-if="num == 10">num == 10</div>
-          <div md-if="num != 10">num != 10</div>
-      </div> -->
       <div>
+        <h1>HTMl Code for Same</h1>
+          <pre>
+&#60;select id="select-day">
+  &#60;option>Yearly&#60;/option>
+  &#60;option>Monthly&#60;/option>
+  &#60;option>Daily&#60;/option>
+&#60;/select>
+  &#60;div class="frequency-details">
+  &#60;div wns-if="frequency == 'Yearly'">Yearly&#60;/div>
+  &#60;div wns-if="frequency == 'Monthly'">Monthly&#60;/div>
+  &#60;div wns-if="frequency == 'Daily'">Daily&#60;/div>
+&#60;/div>
+        </pre>
         <h1>Js code for the same</h1>
         <pre>
 const instance = MiniJs.create({
-    display: true, 
-    key: "test1",
-    test: {key: "test1"},
-    num: 101
+    frequency: 'Yearly', 
 });
-
-
-document.getElementById("toggle-key").addEventListener("click", (e) => {
-    instance.key = instance.key == 'test' ? "someother" : "test";
+document.getElementById("select-day").addEventListener("change", (e) => {
+    instance.frequency = e.target.value;
 })
-document.getElementById("toggle-test-key").addEventListener("click", (e) => {
-    instance.test.key = instance.test.key == 'test' ? "someother" : "test";
-})
-document.getElementById("toggle-num").addEventListener("click", (e) => {
-    instance.num = instance.num == 10 ? 11 : 10;
-})
-document.getElementById("toggle").addEventListener("click", (e) => {
-    instance.display = !instance.display;
-})
+        
         </pre>
       </div>
     </div>
