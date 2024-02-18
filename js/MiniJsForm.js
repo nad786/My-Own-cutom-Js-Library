@@ -73,11 +73,11 @@ class FormControl {
 }
 class MiniJsFormValidaion {
   form = null;
-  prefix = "wns-";
+  prefix = "md-";
   formObj = {};
   detectValueChanges = {};
   allControlKeysForEvent = [];
-  constructor({ prefix = "wns-", selector = "form" } = {}) {
+  constructor({ prefix = "md-", selector = "form" } = {}) {
     this.prefix = prefix;
     this.form = document.querySelector(selector);
     this.objKey = this.form.getAttribute("formGroup");

@@ -23,7 +23,7 @@
     <div class="grid-2">
         <div class="container">
             <button id="show-hide">Hide/Show</button>
-            <div md-class="'active' = active && 'show' == display" attr="{'key': value}">Toggle Div</div>
+            <div md-class="active = (active && 'show' == display); 'test' = active" attr="{'key': value}">Toggle Div</div>
             <button id="toggle">Toggle</button>
             <div md-class="'active' = active" md-class.active="value">Toggle Div</div>
         </div>

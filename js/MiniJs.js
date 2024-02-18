@@ -9,7 +9,7 @@ class MiniJs {
 
   };
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", prefix = "wns-", detectValueChanges = {} } = rest;
+    const { parentSelector = "html", prefix = "md-", detectValueChanges = {} } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.prefix = prefix;
@@ -30,6 +30,7 @@ class MiniJs {
   }
 
   detectChanges(data) {
+    console.time('data');
     let allObjChanges = data;
     let nonPrimitiveData = data.filter(
       (item) => typeof item.newValue == "object" && item.newValue != null
@@ -71,7 +72,9 @@ class MiniJs {
       if(this.detectValueChanges[item.currentPath]) {
         this.detectValueChanges[item.currentPath](item.newValue);
       }
-    })
+    });
+
+    console.timeEnd('data');
   }
 
   
@@ -198,7 +201,7 @@ class MiniJs {
     });
   }
 
-  //wns-disabled
+  //md-disabled
   performDisabledValue(item) {
     const elements = this.container.querySelectorAll(
       `[${this.prefix}disabled*="${item.currentPath}"]`

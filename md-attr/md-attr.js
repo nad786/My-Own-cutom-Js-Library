@@ -1,7 +1,9 @@
 const instance = MiniJs.create({
     dynamicAttr: "login",
     attrValue: "",
-    className: "green"
+    className: "green",
+    imageUrl: "your-url",
+    imageAlt: 'your-alt'
 })
 document.getElementById('btn').addEventListener("click", (e) => {
     instance.dynamicAttr = instance.attrValue;
