@@ -177,6 +177,7 @@ const formInstance = MiniJsFormValidaion.buildForm({
  
  
 <script>
+    console.time('form');
     const formInstance = MiniJsFormValidaion.buildForm({
     name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)], "^[a-zA-Z0-9]*$"),
     email: new FormControl("", [Validators.required, Validators.email]),
@@ -197,6 +198,8 @@ const formInstance = MiniJsFormValidaion.buildForm({
         }
     }
 }); 
+
+console.timeEnd('form');
  
 function validateForm() {
     window.alert(JSON.stringify(formInstance.getValues()));
