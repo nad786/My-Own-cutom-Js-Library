@@ -387,6 +387,9 @@ class MiniJsFormValidaion {
     this.form.addEventListener("focus", this.boundFormFocusEvent);
     this.form.addEventListener("keydown", this.boundFormKeyDownEvent);
     this.form.addEventListener("change",this.boundFormChangeEvent);
+    if (typeof jQuery != "undefined") {
+      $(this.form).on("select2:select", this.boundFormChangeEvent);
+    }
   }
 
   boundFormFocusEvent = this.formFocusEvent.bind(this);
@@ -493,6 +496,11 @@ class MiniJsFormValidaion {
     this.form.removeEventListener("focus", this.boundFormFocusEvent);
     this.form.removeEventListener("keydown", this.boundFormKeyDownEvent);
     this.form.removeEventListener("change",this.boundFormChangeEvent);
+    if (typeof jQuery != "undefined") {
+      $(this.form).off("select2:select", this.boundFormChangeEvent);
+    }
+
+   
   }
 
   static buildForm(obj, options = {}) {
