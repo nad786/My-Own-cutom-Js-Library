@@ -410,8 +410,8 @@ class MiniJs {
       selector: `${this.prefix}input`,
       cb: (ele, val) => {
         ele.value = val;
-        // const event = new Event("change");
-        // ele.dispatchEvent(event);
+        const event = new Event("change");
+        ele.dispatchEvent(event);
       },
     });
   }
