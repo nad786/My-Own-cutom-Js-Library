@@ -73,11 +73,11 @@ class FormControl {
 }
 class MiniJsFormValidaion {
   form = null;
-  prefix = "md-";
+  prefix = null;
   formObj = {};
   detectValueChanges = {};
   allControlKeysForEvent = [];
-  constructor({ prefix = "md-", selector = "form" } = {}) {
+  constructor({ prefix = "wns-", selector = "form" } = {}) {
     this.prefix = prefix;
     this.form = document.querySelector(selector);
     this.objKey = this.form.getAttribute("formGroup");
@@ -312,7 +312,7 @@ class MiniJsFormValidaion {
           break;
 
         case "min":
-          if (parseInt(ele.value) <= validatorProp.value) {
+          if (parseInt(ele.value) < validatorProp.value) {
             ele.setCustomValidity(`Min value is ${validatorProp.value}`);
             error = true;
             targetObj.valid = false;
@@ -322,7 +322,7 @@ class MiniJsFormValidaion {
           }
           break;
         case "max":
-          if (parseInt(ele.value) >= validatorProp.value) {
+          if (parseInt(ele.value) > validatorProp.value) {
             ele.setCustomValidity(`Max value is ${validatorProp.value}`);
             error = true;
             targetObj.valid = false;
@@ -389,6 +389,8 @@ class MiniJsFormValidaion {
     this.form.addEventListener("change",this.boundFormChangeEvent);
     if (typeof jQuery != "undefined") {
       $(this.form).on("select2:select", this.boundFormChangeEvent);
+      $(this.form).on("datepickerChanged", this.boundFormChangeEvent);
+      
     }
   }
 
@@ -498,9 +500,17 @@ class MiniJsFormValidaion {
     this.form.removeEventListener("change",this.boundFormChangeEvent);
     if (typeof jQuery != "undefined") {
       $(this.form).off("select2:select", this.boundFormChangeEvent);
-    }
+      $(this.form).off("datepickerChanged", this.boundFormChangeEvent);
 
-   
+    }
+  }
+
+  makeDirtyToAllField() {
+    if(this.formObj?.[this.objKey]?.controls) {
+      for(let key in this.formObj[this.objKey].controls ) {
+        this.formObj[this.objKey].controls[key].dirty = true
+      }
+    }
   }
 
   static buildForm(obj, options = {}) {
@@ -521,6 +531,7 @@ class MiniJsFormValidaion {
       destroy: instance.destroy.bind(instance),
       updateControls: instance.updateControls.bind(instance),
       getValues: instance.getValues.bind(instance),
+      makeDirtyToAllField: instance.makeDirtyToAllField.bind(instance),
       [instance.objKey]: instance.formObj[instance.objKey],
     };
   }

@@ -9,7 +9,7 @@ class MiniJs {
 
   };
   constructor(obj, rest = {}) {
-    const { parentSelector = "html", prefix = "md-", detectValueChanges = {} } = rest;
+    const { parentSelector = "html", prefix = "wns-", detectValueChanges = {} } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.prefix = prefix;
@@ -191,17 +191,17 @@ class MiniJs {
       const key = this.getMainKeyFromCurrentPath(item.currentPath);
       if (!item.currentPath.endsWith(".length")) {
         this.performLoopOperation(item, key);
-        this.performAttributeAddOpeartaion(item, key);
-        this.performTextOperation(item, key);
         this.performInputOperation(item, key);
       }
+      this.performAttributeAddOpeartaion(item, key);
+      this.performTextOperation(item, key);
       this.performDisabledValue(item);
       this.performClassOpeartion(item, key);
       this.performIfStatementOperation(item, key);
     });
   }
 
-  //md-disabled
+  //wns-disabled
   performDisabledValue(item) {
     const elements = this.container.querySelectorAll(
       `[${this.prefix}disabled*="${item.currentPath}"]`
