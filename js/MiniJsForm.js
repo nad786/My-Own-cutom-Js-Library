@@ -73,8 +73,10 @@ class FormControl {
 }
 class MiniJsFormValidaion {
   form = null;
-  prefix = "md-";
+  prefix = null;
   formObj = {};
+  errorMsg = {};
+  cacheElements = {};
   detectValueChanges = {};
   allControlKeysForEvent = [];
   constructor({ prefix = "md-", selector = "form" } = {}) {
@@ -111,7 +113,6 @@ class MiniJsFormValidaion {
           valid: true,
           touched: false,
           dirty: false,
-          errors: [],
           value: formControls[key].value,
           error: "",
           validators: formControls[key].validators,
@@ -162,7 +163,8 @@ class MiniJsFormValidaion {
             this.formValidation(
               formControls[key].validators,
               obj.controls[key],
-              ele
+              ele,
+              key
             );
           });
         } else {
@@ -206,15 +208,12 @@ class MiniJsFormValidaion {
     changes.forEach((item) => {
       const path = item.currentPath.split(".");
       path.pop();
-      // const validators = this.miniJSInstance.getValueFromkeyWithDot(
-      //   this.formObj,
-      //   path.join(".")
-      // )?.validators;
-
-      const ele = this.form.querySelector(
-        `[${this.prefix}input="${item.currentPath}"]`
-      );
-
+      if(!this.cacheElements[item.currentPath]) {
+        this.cacheElements[item.currentPath] = this.form.querySelector(
+          `[${this.prefix}input="${item.currentPath}"]`
+        );
+      }
+      const ele = this.cacheElements[item.currentPath];
       if (ele) {
         const realObj = this.miniJSInstance.getValueFromkeyWithDot(
           this.miniJSInstance.lib,
@@ -222,35 +221,24 @@ class MiniJsFormValidaion {
         );
 
         if (realObj?.validators?.length) {
-          this.formValidation(realObj.validators, realObj, ele);
+          this.formValidation(realObj.validators, realObj, ele, path.pop());
         }
       }
     });
   }
 
-  formValidation(validationObj = [], targetObj = {}, ele) {
+  formValidation(validationObj = [], targetObj = {}, ele = null, key) {
     let error = false;
     this.formObj[this.objKey].valid = false;
-    targetObj.errors = {
-      required: false,
-      minLength: false,
-      maxLength: false,
-      min: false,
-      max: false,
-      pattern: false,
-      custom: false,
-    };
     for (let validatorProp of validationObj) {
       // const validatorProp = validation();
+      let errorMsg = "Fields";
+      const customErrorMsg = this.errorMsg[key];
       switch (validatorProp?.name) {
         case "required":
           if (ele.getAttribute("type") == "checkbox" && !ele.checked) {
-            ele.setCustomValidity("Mandatory Field");
+            errorMsg =  customErrorMsg.required ? customErrorMsg.required : "Mandatory Field";
             error = true;
-            targetObj.valid = false;
-            targetObj.error = "Mandatory Field";
-            targetObj.errors["required"] = true;
-            return;
           }
           if (ele.getAttribute("type") == "radio") {
             const name = ele.getAttribute("name");
@@ -262,87 +250,51 @@ class MiniJsFormValidaion {
               }
             });
             if (!flag) {
-              ele.setCustomValidity("Mandatory Field");
+              errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
               error = true;
-              targetObj.valid = false;
-              targetObj.error = "Mandatory Field";
-              targetObj.errors["required"] = true;
-              return;
             }
           }
           if (!ele.value) {
-            ele.setCustomValidity("Mandatory Field");
+            errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
             error = true;
-            targetObj.valid = false;
-            targetObj.error = "Mandatory Field";
-            targetObj.errors["required"] = true;
-            return;
           }
           break;
         case "minLength":
           if (ele.value.length < validatorProp.value) {
-            ele.setCustomValidity(`Min Length is ${validatorProp.value}`);
+            errorMsg =  customErrorMsg?.minLength ? customErrorMsg.minLength : `Min Length is ${validatorProp.value}`;
             error = true;
-            targetObj.valid = false;
-            targetObj.error = `Min Length is ${validatorProp.value}`;
-            targetObj.errors["minLength"] = true;
-            return;
           }
           break;
         case "maxLength":
           if (ele.value.length > validatorProp.value) {
-            ele.setCustomValidity(`Max Length is ${validatorProp.value}`);
+            errorMsg =  customErrorMsg?.maxLength ? customErrorMsg.maxLength : `Max Length is ${validatorProp.value}`;
             error = true;
-            targetObj.valid = false;
-            targetObj.error = `Max Length is ${validatorProp.value}`;
-            targetObj.errors["maxLength"] = true;
-            return;
           }
           break;
 
         case "pattern":
           if (!new RegExp(validatorProp.value).test(ele.value)) {
-            ele.setCustomValidity(`Pattern mismatch`);
+            errorMsg =  customErrorMsg?.pattern ? customErrorMsg.pattern : "Pattern mismatch";
             error = true;
-            targetObj.valid = false;
-            targetObj.error = `Pattern mismatch`;
-            targetObj.errors["pattern"] = true;
-            return;
           }
           break;
 
         case "min":
           if (parseInt(ele.value) <= validatorProp.value) {
-            ele.setCustomValidity(`Min value is ${validatorProp.value}`);
+            errorMsg =  customErrorMsg?.min ? customErrorMsg.min : `Min value is ${validatorProp.value}`;
             error = true;
-            targetObj.valid = false;
-            targetObj.error = `Min value is ${validatorProp.value}`;
-            targetObj.errors["min"] = true;
-            return;
           }
           break;
         case "max":
           if (parseInt(ele.value) >= validatorProp.value) {
-            ele.setCustomValidity(`Max value is ${validatorProp.value}`);
+            errorMsg =  customErrorMsg?.max ? customErrorMsg.max : `Max value is ${validatorProp.value}`;
             error = true;
-            targetObj.valid = false;
-            targetObj.error = `Max value is ${validatorProp.value}`;
-            targetObj.errors["max"] = true;
-            return;
           }
           break;
         case "email":
-          if (
-            !String(ele.value)
-              .toLowerCase()
-              .match(/^[\w\.-]+@[a-zA-Z\d\.-]+\.[a-zA-Z]{2,}$/)
-          ) {
-            ele.setCustomValidity(`Invalid Email`);
+          if (!/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/.exec(ele.value)) {
+            errorMsg =  customErrorMsg?.email ? customErrorMsg.email : `Invalid Email`;
             error = true;
-            targetObj.valid = false;
-            targetObj.error = `Invalid Email`;
-            targetObj.errors["email"] = true;
-            return;
           }
           break;
         default:
@@ -359,14 +311,19 @@ class MiniJsFormValidaion {
             };
           }
           if (cbResponse.error) {
-            ele.setCustomValidity(cbResponse?.msg ? cbResponse?.msg : "Error");
+            errorMsg = cbResponse?.msg ? cbResponse?.msg : "Error";
             error = true;
-            targetObj.valid = false;
-            targetObj.error = cbResponse?.msg;
-            targetObj.errors["custom"] = true;
           }
       }
+      if(error) {
+        ele.setCustomValidity(errorMsg);
+        targetObj.valid = false;
+        targetObj.error = errorMsg;
+        return;
+      }
     }
+    
+
     if (!error) {
       if (ele.getAttribute("type") == "radio") {
         const name = ele.getAttribute("name");
@@ -499,13 +456,12 @@ class MiniJsFormValidaion {
     if (typeof jQuery != "undefined") {
       $(this.form).off("select2:select", this.boundFormChangeEvent);
     }
-
-   
   }
 
   static buildForm(obj, options = {}) {
     const instance = new MiniJsFormValidaion(options);
     instance.updateDetectChanges(options.detectValueChanges);
+    instance.errorMsg = options.errorMsg ? options.errorMsg: {};
     instance.addEventListenerToForm();
     instance.formObj = {
       [instance.objKey]: {

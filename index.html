@@ -94,7 +94,7 @@ button:disabled,button:disabled:hover {
                 <div class="row">
                     <label>Full Name</label>
                     <input autocomplete="off" formControlName="name" type="text" name="name">
-                    <div class="error" md-text="contactForm.controls.name.error"></div>
+                    <div class="error" data-id="test" md-text="contactForm.controls.name.error"></div>
                 </div>
                 <div class="row">
                     <label>Email Address</label>
@@ -170,21 +170,19 @@ const formInstance = MiniJsFormValidaion.buildForm({
 });
             </pre>
             <h1>Exposed Field</h1>
-            <div>contactForm.controls.name.error:- default error message</div>
+            <div>contactForm.controls.name.error:- default generic error message, can be modified by passing optionals argumenets</div>
             <div>contactForm.controls.name.value:- form control value</div>
             <div>contactForm.controls.name.touched:- true if form control touched by user</div>
             <div>contactForm.controls.name.dirty:- true if form control modified by user</div>
-            <div>contactForm.controls.name.errors.required:- true if form control moified by throwing required error</div>
-            <div>contactForm.controls.name.errors.minLength:- true if form control moified by throwing minLength error</div>
-            <div>contactForm.controls.name.errors.maxLength:- true if form control moified by throwing maxLength error</div>
         </div>
     </div>
  
  
 <script>
+    console.time('form');
      $('.country').select2();
     const formInstance = MiniJsFormValidaion.buildForm({
-    name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)], "^[a-zA-Z0-9]*$"),
+    name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
     email: new FormControl("", [Validators.required, Validators.email]),
     comment: new FormControl("", Validators.required),
     mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
@@ -197,9 +195,13 @@ const formInstance = MiniJsFormValidaion.buildForm({
     country: new FormControl("", Validators.required),
     hobbies: new FormControl(["music", "movies"])
 }, {
-    detectValueChanges: {
-        "name": (value) => {
-            console.log("Value changed", value)
+    errorMsg: {
+        name: {
+            required: "Enter Name field",
+            minLength: "MinLength"
+        },
+        country: {
+            required: "Select Country field"
         }
     }
 }); 

@@ -1,5 +1,5 @@
 class MiniJs {
-  prefix = "";
+  prefix = null;
   elements = [];
   listElements = {};
   cachedElement = {};
@@ -23,6 +23,8 @@ class MiniJs {
     this.cachedElement[`${this.prefix}attr`] = {};
     this.cachedElement[`${this.prefix}disabled`] = {};
     this.cachedElement[`${this.prefix}input`] = {};
+
+    this.addMutationObserver();
   }
 
   //common Operation
@@ -1050,7 +1052,7 @@ class MiniJs {
   addMutationObserver() {
     const targetNode = this.container;
     // Options for the observer (which mutations to observe)
-    const config = { childList: true, subtree: true };
+    const config = {childList: true, subtree: true};
 
     // Callback function to execute when mutations are observed
     const callback = (mutationList, observer) => {
@@ -1078,16 +1080,25 @@ class MiniJs {
   }
 
   resetCacheElement(ele) {
+    
     const attributesNode = ele.attributes;
     for(let i = 0; i < attributesNode.length; i++) {
       const attrNode = attributesNode[i];
-      this.cachedElement[attrNode.nodeName] = {}
+      if(attrNode.nodeName.startsWith(this.prefix)) {
+        this.cachedElement[attrNode.nodeName] = {}
+      }
     }
 
-    const childNodes = ele.children;
-    for(let i=0;i<childNodes.length;i++) {
-      this.resetCacheElement(childNodes[i]);
-    }
+    ["if", "text", "class", "attr", "disabled", "input"].forEach(key => {
+      if(ele.querySelector(`[${this.prefix}${key}]`)) {
+        this.cachedElement[`${this.prefix}${key}`] = {};
+      }
+    })
+
+    // const childNodes = ele.children;
+    // for(let i=0;i<childNodes.length;i++) {
+    //   this.resetCacheElement(childNodes[i]);
+    // }
   }
 
   findOrCachedElement(attrName, attrValue) {
@@ -1110,7 +1121,6 @@ class MiniJs {
   static create(obj, rest = {}) {
     const instance = new MiniJs(obj, rest);
     instance.init(obj);
-    instance.addMutationObserver();
     return instance.lib;
   }
 }
