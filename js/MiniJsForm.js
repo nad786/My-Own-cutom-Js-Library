@@ -91,6 +91,13 @@ class MiniJsFormValidaion {
     this.generateObjectFromControls(this.formObj[this.objKey], formControls);
     this.createMiniJSObj(this.formObj, options);
     ObservableSlim.observe(this.miniJSInstance.lib, (changes = []) => {
+      changes = changes.map(item => {
+        let path = item.currentPath.split(".");
+        if(!isNaN(path.pop())) {
+          item.currentPath = path.join(".");
+        }
+        return item;
+      })
       changes = changes.filter((item) => item.currentPath.endsWith(".value"));
       if (changes.length) {
         this.validateElement(changes);
@@ -221,26 +228,41 @@ class MiniJsFormValidaion {
         );
 
         if (realObj?.validators?.length) {
-          this.formValidation(realObj.validators, realObj, ele, path.pop());
+            this.formValidation(realObj.validators, realObj, ele, path.pop());
+          }
         }
-      }
     });
   }
 
   formValidation(validationObj = [], targetObj = {}, ele = null, key) {
-    let error = false;
+    
     this.formObj[this.objKey].valid = false;
+    let error = false;
     for (let validatorProp of validationObj) {
       // const validatorProp = validation();
       let errorMsg = "Fields";
       const customErrorMsg = this.errorMsg[key];
       switch (validatorProp?.name) {
         case "required":
-          if (ele.getAttribute("type") == "checkbox" && !ele.checked) {
-            errorMsg =  customErrorMsg.required ? customErrorMsg.required : "Mandatory Field";
-            error = true;
-          }
-          if (ele.getAttribute("type") == "radio") {
+          if(ele.getAttribute("type") == "checkbox") {
+            const name = ele.getAttribute("name");
+            const allCheckboxButtons = this.form.elements[name];
+            let flag = false;
+            allCheckboxButtons.forEach((checkBtn) => {
+              if (checkBtn.checked) {
+                flag = true;
+              }
+            });
+            if(flag) {
+              allCheckboxButtons.forEach((checkBtn) => {
+                checkBtn.setCustomValidity("");
+              });
+            } else {
+              errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
+              error = true;
+            }
+
+          } else if (ele.getAttribute("type") == "radio") {
             const name = ele.getAttribute("name");
             const allRadioButton = this.form.elements[name];
             let flag = false;
@@ -253,8 +275,7 @@ class MiniJsFormValidaion {
               errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
               error = true;
             }
-          }
-          if (!ele.value) {
+          }else if (!ele.value) {
             errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
             error = true;
           }
@@ -373,17 +394,21 @@ class MiniJsFormValidaion {
     }
 
     const obj = this.getTargetObjectOfFormControlELement(e.target);
-    obj.dirty = true;
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       obj.value = e.target.value;
+      obj.dirty = true;
     }, 300);
   }
 
   formChangeEvent(e) {
     const obj = this.getTargetObjectOfFormControlELement(e.target);
+    if (e.target.type == "radio" || e.target.type == "checkbox") {
+      this.miniJSInstance.performCheckBox_RdioButtonChangeEventOperation(e, obj, "value")
+    } else {
+      obj.value = e.target.value;
+    }
     obj.dirty = true;
-    obj.value = e.target.value;
   }
 
   getTargetObjectOfFormControlELement(ele) {
@@ -429,7 +454,21 @@ class MiniJsFormValidaion {
 
   patchValues(obj = {}, formObj = this.formObj[this.objKey]) {
     for (let key in obj) {
-      if (typeof obj[key] == "object") {
+      if(Array.isArray(obj[key])) {
+        console.log("t");
+        const elements = this.form.querySelectorAll(`[${this.prefix}input="${this.objKey}.controls.${key}.value"]`);
+        elements.forEach(ele => {
+            ele.checked = obj[key].includes(ele.value);
+            const path = ele.getAttribute(`${this.prefix}input`).split(".")
+            path.pop();
+            const realObj = this.miniJSInstance.getValueFromkeyWithDot(
+              this.miniJSInstance.lib,
+              path.join(".")
+            );
+            this.formValidation(realObj.validators, realObj, ele, key);
+        })
+        formObj.controls[key].value = obj[key];
+      } else if (typeof obj[key] == "object") {
         this.patchValues(obj[key], formObj.controls[key]);
       } else {
         formObj.controls[key].value = obj[key];
@@ -482,6 +521,7 @@ class MiniJsFormValidaion {
       ...options,
       parentSelector: options?.selector ? options.selector : "form",
     });
+    instance.formObj[instance.objKey].valid = instance.form.checkValidity?.();
     return {
       patchValues: instance.patchValues.bind(instance),
       destroy: instance.destroy.bind(instance),

@@ -94,22 +94,22 @@ button:disabled,button:disabled:hover {
                 <div class="row">
                     <label>Full Name</label>
                     <input autocomplete="off" formControlName="name" type="text" name="name">
-                    <div class="error" data-id="test" md-text="contactForm.controls.name.error"></div>
+                    <div class="error" data-id="test" wns-text="contactForm.controls.name.error"></div>
                 </div>
                 <div class="row">
                     <label>Email Address</label>
                     <input autocomplete="off" type="text" formControlName="email" name="email">
-                    <div class="error" md-text="contactForm.controls.email.error"></div>
+                    <div class="error" wns-text="contactForm.controls.email.error"></div>
                 </div>
                 <div class="row">
                     <label>Mobile Number</label>
                     <input autocomplete="off" type="text" formControlName="mobile" name="mobile">
-                    <div class="error" md-text="contactForm.controls.mobile.error"></div>
+                    <div class="error" wns-text="contactForm.controls.mobile.error"></div>
                 </div>
                 <div class="row">
                     <label>Comment</label>
                     <textarea autocomplete="off" formControlName="comment"></textarea>
-                    <div class="error" md-text="contactForm.controls.comment.error"></div>
+                    <div class="error" wns-text="contactForm.controls.comment.error"></div>
                 </div>
 
                 <div class="row">
@@ -121,7 +121,7 @@ button:disabled,button:disabled:hover {
                         <option>United States</option>
                         <option>United Kingdom</option>
                     </select>
-                    <div class="error" md-text="contactForm.controls.country.error"></div>
+                    <div class="error" wns-text="contactForm.controls.country.error"></div>
                 </div>
                 <div class="row">
                     <label>Gender</label>
@@ -129,18 +129,19 @@ button:disabled,button:disabled:hover {
                         <label><input formControlName="gender" type="radio" name="gender" value="male"> Male</label>
                         <label><input type="radio" formControlName="gender" name="gender" value="female"> Female</label>
                     </div>
-                    <div class="error" md-text="contactForm.controls.gender.error"></div>
+                    <div class="error" wns-text="contactForm.controls.gender.error"></div>
                 </div>
                 <div class="row">
                     <label>Hobbies <i>(Optional)</i></label>
                     <div class="form-inline">
-                        <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="sports"> Sports</label>
-                        <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="movies"> Movies</label>
-                        <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="music"> Music</label>
+                        <label><input type="checkbox" formControlName="hobbies" name="hobbies" value="sports"> Sports</label>
+                        <label><input type="checkbox" formControlName="hobbies" name="hobbies" value="movies"> Movies</label>
+                        <label><input type="checkbox" formControlName="hobbies" name="hobbies" value="music"> Music</label>
                     </div>
+                    <div class="error" wns-text="contactForm.controls.hobbies.error"></div>
                 </div>
                 <div class="row">
-                    <button type="button" md-disabled="contactForm.valid" onclick="validateForm()">Submit</button>
+                    <button type="button" wns-disabled="!contactForm.valid" onclick="validateForm()">Submit</button>
                 </div>
             </form>
         </div>
@@ -153,7 +154,7 @@ button:disabled,button:disabled:hover {
     &#60;div class="row">
         &#60;label>Full Name&#60;/label>
         &#60;input formControlName="name" type="text" name="name">
-        &#60;div class="error" md-text="contactForm.controls.name.error">&#60;/div>
+        &#60;div class="error" wns-text="contactForm.controls.name.error">&#60;/div>
     &#60;/div>
 &#60;/form>
             </pre>
@@ -181,18 +182,18 @@ const formInstance = MiniJsFormValidaion.buildForm({
 <script>
      $('.country').select2();
     const formInstance = MiniJsFormValidaion.buildForm({
-    name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
-    email: new FormControl("", [Validators.required, Validators.email]),
-    comment: new FormControl("", Validators.required),
-    mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
-        if(value.length != 10 || isNaN(value) || !value.startsWith("9")) {
-            return "Please enter valid mobile number";
-        }
-        return "";
-    })]),
-    gender: new FormControl("", Validators.required),
-    country: new FormControl("", Validators.required),
-    hobbies: new FormControl(["music", "movies"])
+    // name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
+    // email: new FormControl("", [Validators.required, Validators.email]),
+    // comment: new FormControl("", Validators.required),
+    // mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
+    //     if(value.length != 10 || isNaN(value) || !value.startsWith("9")) {
+    //         return "Please enter valid mobile number";
+    //     }
+    //     return "";
+    // })]),
+    // gender: new FormControl("", Validators.required),
+    // country: new FormControl("", Validators.required),
+    hobbies: new FormControl(["music", "movies"], Validators.required)
 }, {
     errorMsg: {
         name: {
