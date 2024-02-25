@@ -24,9 +24,9 @@
         <button id="todolist">Add List</button><br>
         <div class="registration">
             <ul md-for="todoList" md-let="item">
-                <li>
-                  <div md-text="item.id"></div>
-                  <div md-text="First- {{item.id}} - {{item.name}} - {{item.title}} "></div>
+                <li >
+                  <div md-text="item.id" md-if="item.id == 2"></div>
+                  <div md-class="'active' = item.isActive; 'success' = item.success" md-attr="data-id=item.id" md-text="First- {{item.id}} - {{item.name}} - {{item.title}} "></div>
                   <div md-text="Second- {{item.id}} - {{item.name}} - {{item.title}} "></div>
                 </li>
             </ul>
@@ -38,7 +38,7 @@
         <label>First Name</label><br>
         <input md-input="user.lname"><br>
         <label>attr val</label><br>
-        <input md-input="user.attrVal"><br>
+        <input md-input="user.inputVal"><br>
         <button id="addUser">Add User</button><br>
         <div class="registration">
           <ul md-for="test.users" md-let="user">

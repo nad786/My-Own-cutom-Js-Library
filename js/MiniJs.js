@@ -1,24 +1,30 @@
 class MiniJs {
-  prefix = "";
+  prefix = null;
   elements = [];
   listElements = {};
+  cachedElement = {};
   listContainer = {};
   container = document;
   allKey = [];
-  detectValueChanges = {
-
-  };
+  detectValueChanges = {};
   constructor(obj, rest = {}) {
     const { parentSelector = "html", prefix = "wns-", detectValueChanges = {} } = rest;
     this.lib = ObservableSlim.create(obj, true, this.detectChanges.bind(this));
     this.container = document.querySelector(parentSelector);
     this.prefix = prefix;
     this.detectValueChanges = detectValueChanges;
+    this.cachedElement[`${this.prefix}if`] = {};
+    this.cachedElement[`${this.prefix}text`] = {};
+    this.cachedElement[`${this.prefix}class`] = {};
+    this.cachedElement[`${this.prefix}attr`] = {};
+    this.cachedElement[`${this.prefix}disabled`] = {};
+    this.cachedElement[`${this.prefix}input`] = {};
+
+    this.addMutationObserver();
   }
 
   //common Operation
   init(obj) {
-    
     // this.mappedActionForPerformance(obj);
     const data = this.generateDefaultObjectType(obj);
     data.forEach((item) => {
@@ -30,7 +36,6 @@ class MiniJs {
   }
 
   detectChanges(data) {
-    console.time('data');
     let allObjChanges = data;
     let nonPrimitiveData = data.filter(
       (item) => typeof item.newValue == "object" && item.newValue != null
@@ -65,40 +70,14 @@ class MiniJs {
         }
         arr = [...arr, ...item];
       });
-      allObjChanges = [...arr, ...primitiveData]
-    } 
+      allObjChanges = [...arr, ...primitiveData];
+    }
     this.performOperation(allObjChanges);
-    allObjChanges.forEach(item => {
-      if(this.detectValueChanges[item.currentPath]) {
+    allObjChanges.forEach((item) => {
+      if (this.detectValueChanges[item.currentPath]) {
         this.detectValueChanges[item.currentPath](item.newValue);
       }
     });
-
-    console.timeEnd('data');
-  }
-
-  
-
-  initClassAndAttributeValue() {
-    this.container.querySelectorAll();
-    // if (this.container.querySelector(`[${this.prefix}input]`)) {
-    //   this.addFormEventToResetitsValue();
-    //   data.forEach((item) => {
-    //     if (item.property != "length") {
-    //       if (typeof item.newValue == "object") {
-    //         const mainKey = item.currentPath;
-    //         const objKeys = this.generateKeyWithDotSeperated(item.newValue);
-    //         objKeys.forEach((key) => {
-    //           const keyForEvent = `${mainKey}.${key}`;
-    //           this.attachedEventToForm(keyForEvent);
-    //         });
-    //       } else {
-    //         const key = item.currentPath;
-    //         this.attachedEventToForm(key);
-    //       }
-    //     }
-    //   });
-    // }
   }
 
   convertStringToFunction(str) {
@@ -140,9 +119,6 @@ class MiniJs {
   }) {
     let textKey = ele.getAttribute(`${selector}`);
     if (textKey) {
-      if (textKey.startsWith("!")) {
-        textKey = textKey.slice(1);
-      }
       let val = this.getValueFromkeyWithDot(item.newValue, textKey);
       cb(ele, val);
     } else {
@@ -203,8 +179,9 @@ class MiniJs {
 
   //wns-disabled
   performDisabledValue(item) {
-    const elements = this.container.querySelectorAll(
-      `[${this.prefix}disabled*="${item.currentPath}"]`
+    const elements = this.findOrCachedElement(
+      `${this.prefix}disabled`,
+      item.currentPath
     );
     try {
       elements.forEach((ele) => {
@@ -223,8 +200,12 @@ class MiniJs {
 
   //class operation
   performClassOpeartion(item) {
-    const elements = this.container.querySelectorAll(
-      `[${this.prefix}class*="${item.currentPath}"]`
+    // const elements = this.container.querySelectorAll(
+    //   `[${this.prefix}class*="${item.currentPath}"]`
+    // );
+    const elements = this.findOrCachedElement(
+      `${this.prefix}class`,
+      item.currentPath
     );
     elements.forEach((element) => {
       this.updateClassFromBindProperty(element);
@@ -263,25 +244,26 @@ class MiniJs {
 
   //attr opeartion
   performAttributeAddOpeartaion(item, key, ele) {
-    const elements = this.container.querySelectorAll(
-      `[${this.prefix}attr*="${item.currentPath}"]`
+    // const elements = this.container.querySelectorAll(
+    //   `[${this.prefix}attr*="${item.currentPath}"]`
+    // );
+    const elements = this.findOrCachedElement(
+      `${this.prefix}attr`,
+      item.currentPath
     );
     if (elements.length) {
       elements.forEach((element) => {
-        this.updateAttributeValueForAttr(item, element);
+        this.updateAttributeValueForAttr(element);
       });
     }
   }
 
-  updateAttributeValueForAttr(item, element, key = "") {
+  updateAttributeValueForAttr(element) {
     const multiAttr = element.getAttribute(`${this.prefix}attr`).split(";");
     multiAttr.forEach((singleAttr) => {
       const attr = singleAttr.split("=").map((item) => item.trim());
-      let val = this.getValueFromkeyWithDot(
-        key ? item.newValue : this.lib,
-        key ? key : attr[1]
-      );
-      if (val) {
+      let val = this.getValueFromkeyWithDot(this.lib,attr[1]);
+      if (val || val == 0) {
         const attrName = this.removeQuoteAndDoubleQuote(attr[0]);
         element.setAttribute(attrName, val);
       }
@@ -290,8 +272,12 @@ class MiniJs {
 
   //if opeartion to perform
   performIfStatementOperation(item) {
-    const elements = this.container.querySelectorAll(
-      `[${this.prefix}if*="${item.currentPath}"]`
+    // const elements = this.container.querySelectorAll(
+    //   `[${this.prefix}if*="${item.currentPath}"]`
+    // );
+    const elements = this.findOrCachedElement(
+      `${this.prefix}if`,
+      item.currentPath
     );
     try {
       elements.forEach((ele) => {
@@ -313,35 +299,28 @@ class MiniJs {
     const attr = ele.getAttribute(`${this.prefix}if`);
     if (attr) {
       const display = ele.getAttribute(`${this.prefix}display`) ?? "block";
-      if (attr.includes("=")) {
-        const data = this.checkCondition(item, ele, "", attr, false);
-        if (data) {
-          ele.style.display = display;
-        } else {
-          ele.style.display = "none";
-        }
+      const func = this.convertStringToFunction(attr);
+      if (func()) {
+        ele.style.display = display;
       } else {
-        this.performAllOperationForAllItsChildNodes({
-          flag,
-          item,
-          ele,
-          selector: `${this.prefix}if`,
-          cb: (ele, val) => {
-            if ((val && attr[0] != "!") || (!val && attr[0] == "!")) {
-              ele.style.display = display;
-            } else {
-              ele.style.display = "none";
-            }
-          },
-        });
+        ele.style.display = "none";
       }
+    } else {
+      const elements = ele.querySelectorAll(`[${this.prefix}if]`);
+      elements.forEach((element) => {
+        this.hideShowELement(item, element, flag);
+      });
     }
   }
 
   //text opeartion
   performTextOperation(item) {
-    const elements = this.container.querySelectorAll(
-      `[${this.prefix}text*="${item.currentPath}"]`
+    // const elements = this.container.querySelectorAll(
+    //   `[*="${item.currentPath}"]`
+    // );
+    const elements = this.findOrCachedElement(
+      `${this.prefix}text`,
+      item.currentPath
     );
     if (elements.length) {
       elements.forEach((element) => {
@@ -362,7 +341,7 @@ class MiniJs {
     let val;
     if (attr == item.currentPath) {
       val = this.getValueFromkeyWithDot(this.lib, attr);
-    } else if (!flag && attr?.includes("{{")) {
+    } else if (attr?.includes("{{")) {
       val = this.replaceAllKeyToValueWithRegex(attr, this.allKey);
     } else {
       return;
@@ -373,27 +352,69 @@ class MiniJs {
 
   //input opeartion
   performInputOperation(item) {
-    const elements = this.container.querySelectorAll(
-      `[${this.prefix}input="${item.currentPath}"]:not([type="checkbox"],[type="radio"])`
-      // `[${this.prefix}input="${item.currentPath}"]`
-    );
+    let elements = null;
+
+    if (
+      !this.cachedElement[`${this.prefix}input`][item.currentPath + "-input"]
+    ) {
+      elements = this.container.querySelectorAll(
+        `[${this.prefix}input="${item.currentPath}"]:not([type="checkbox"],[type="radio"])`
+      );
+      this.cachedElement[`${this.prefix}input`][item.currentPath + "-input"] =
+        elements;
+    } else {
+      elements =
+        this.cachedElement[`${this.prefix}input`][item.currentPath + "-input"];
+    }
+
     if (elements.length) {
       elements.forEach((element) => {
         this.modifyMdInputValue(item, element);
       });
     } else {
-      const elements = this.container.querySelectorAll(
-        `[${this.prefix}input="${item.currentPath}"][type="radio"]`
-      );
+      let elements = null;
+
+      if (
+        !this.cachedElement[`${this.prefix}input`][item.currentPath + "-radio"]
+      ) {
+        elements = this.container.querySelectorAll(
+          `[${this.prefix}input="${item.currentPath}"][type="radio"]`
+        );
+        this.cachedElement[`${this.prefix}input`][item.currentPath + "-radio"] =
+          elements;
+      } else {
+        elements =
+          this.cachedElement[`${this.prefix}input`][
+            item.currentPath + "-radio"
+          ];
+      }
       elements.forEach((element) => {
         if (element.value == item.newValue) {
           element.checked = true;
         }
       });
 
-      const chechboxEle = this.container.querySelector(
+      let chechboxEle = this.container.querySelector(
         `[${this.prefix}input="${item.currentPath}"][type="checkbox"]`
       );
+
+      if (
+        !this.cachedElement[`${this.prefix}input`][
+          item.currentPath + "-checkbox"
+        ]
+      ) {
+        chechboxEle = this.container.querySelector(
+          `[${this.prefix}input="${item.currentPath}"][type="checkbox"]`
+        );
+        this.cachedElement[`${this.prefix}input`][
+          item.currentPath + "-checkbox"
+        ] = chechboxEle;
+      } else {
+        chechboxEle =
+          this.cachedElement[`${this.prefix}input`][
+            item.currentPath + "-checkbox"
+          ];
+      }
       if (chechboxEle) {
         if (chechboxEle.value == item.newValue) {
           chechboxEle.checked = true;
@@ -424,33 +445,36 @@ class MiniJs {
       obj = obj?.[item];
     });
     if (e.target.type == "radio" || e.target.type == "checkbox") {
-
       //single checkbox then value as string if multiple then value as array of ftring
-      const selector = `[${this.prefix}input="${e.target.getAttribute(this.prefix + "input")}"]`;
-      if(e.target.type == "checkbox" && this.container.querySelectorAll(selector).length > 1) {
+      const selector = `[${this.prefix}input="${e.target.getAttribute(
+        this.prefix + "input"
+      )}"]`;
+      if (
+        e.target.type == "checkbox" &&
+        this.container.querySelectorAll(selector).length > 1
+      ) {
         if (e.target.checked) {
-          if(!Array.isArray(obj[targetKey])) {
+          if (!Array.isArray(obj[targetKey])) {
             obj[targetKey] = [];
           }
           obj[targetKey].push(e.target.value);
         } else {
-          if(obj[targetKey].length) {
+          if (obj[targetKey].length) {
             // const index = obj[targetKey].findIndex(item => item == e.target.value);
             // obj[targetKey].splice(index, 1);
-            obj[targetKey] = obj[targetKey].filter(item => item != e.target.value);
+            obj[targetKey] = obj[targetKey].filter(
+              (item) => item != e.target.value
+            );
           }
         }
         return;
       }
-      
 
       if (e.target.checked) {
         obj[targetKey] = e.target.value;
       } else {
         obj[targetKey] = "";
       }
-    } else if(e.target.type == "checkbox") {
-      
     } else {
       obj[targetKey] = e.target.value;
     }
@@ -461,7 +485,10 @@ class MiniJs {
       this.addFormEventToResetitsValue();
       data.forEach((item) => {
         if (item.property != "length") {
-          if (typeof item.newValue == "object" && !Array.isArray(item.newValue)) {
+          if (
+            typeof item.newValue == "object" &&
+            !Array.isArray(item.newValue)
+          ) {
             const mainKey = item.currentPath;
             const objKeys = this.generateKeyWithDotSeperated(item.newValue);
             objKeys.forEach((key) => {
@@ -510,16 +537,18 @@ class MiniJs {
           element.tagName == "INPUT" &&
           (!typeattr || (typeattr != "radio" && typeattr != "checkbox"))
         ) {
-          
-          element.removeEventListener("keyup", this.processChangeKeyUpEvent.bind(this));
+          element.removeEventListener(
+            "keyup",
+            this.processChangeKeyUpEvent.bind(this)
+          );
           let timer;
           element.addEventListener("keyup", (e) => {
             clearTimeout(timer);
             timer = setTimeout(() => {
-              this.performInputChangeEvent(e)
+              this.performInputChangeEvent(e);
             }, 300);
           });
-        // }
+          // }
         } else {
           element.removeEventListener(
             "change",
@@ -566,24 +595,24 @@ class MiniJs {
     let tempArr = [];
     if (nestedKey) nestedKey += ".";
     if (Array.isArray(data)) {
-      const temp = data.map((item, index) => {
-        return {
-          type: "add",
-          target: data,
-          currentPath: `${nestedKey}${index}`,
-          newValue: item,
-        };
-      });
+      // const temp = data.map((item, index) => {
+      //   return {
+      //     type: "add",
+      //     target: data,
+      //     currentPath: `${nestedKey}${index}`,
+      //     newValue: item,
+      //   };
+      // });
       if (nestedKey.endsWith(".")) {
         nestedKey = nestedKey.slice(0, nestedKey.length - 1);
       }
-      tempArr = [...tempArr, ...temp];
-      // tempArr.push({
-      //   type: "add",
-      //   target: data,
-      //   currentPath: `${nestedKey}`,
-      //   newValue: data,
-      // });
+      // tempArr = [...tempArr, ...temp];
+      tempArr.push({
+        type: "add",
+        target: data,
+        currentPath: `${nestedKey}`,
+        newValue: data,
+      });
       tempArr.push({
         type: "add",
         target: data,
@@ -742,59 +771,110 @@ class MiniJs {
     const allNestedKeys = isCurrentValueisObject
       ? this.generateKeyWithDotSeperated(item.newValue)
       : [item.newValue];
-    this.addAllAttributeToChildren(`${this.prefix}text`, item, ele, varName);
-    this.addAllAttributeToChildren(`${this.prefix}if`, item, ele, varName);
-    this.addAllAttributeToChildren(`${this.prefix}input`, item, ele, varName);
+    this.addAllAttributeToChildren(
+      `${this.prefix}text`,
+      item,
+      ele,
+      varName,
+      (element) => {
+        const attr = element.getAttribute(`${this.prefix}text`);
+        if (attr.includes("{{")) {
+          this.modifyMdTextValue({}, element);
+        } else {
+          this.modifyMdTextValue({ currentPath: attr }, element);
+        }
+      }
+    );
+    this.addAllAttributeToChildren(
+      `${this.prefix}if`,
+      item,
+      ele,
+      varName,
+      (element) => {
+        this.hideShowELement({}, element, true);
+      }
+    );
+    this.addAllAttributeToChildren(
+      `${this.prefix}input`,
+      item,
+      ele,
+      varName,
+      (element) => {
+        const attr = element.getAttribute(`${this.prefix}input`);
+        const val = this.getValueFromkeyWithDot(this.lib, attr);
+        element.value = val;
+      }
+    );
+    this.addAllAttributeToChildren(
+      `${this.prefix}disabled`,
+      item,
+      ele,
+      varName,
+      (element) => {
+        let attr = element.getAttribute(`${this.prefix}disabled`);
+        let func = this.convertStringToFunction(attr);
+        if (func()) {
+          ele.disabled = false;
+        } else {
+          ele.disabled = true;
+        }
+      }
+    );
     this.addAttrClassToChildred(
       `${this.prefix}attr`,
       item,
       ele,
       varName,
-      allNestedKeys
+      allNestedKeys,
+      (element) => {
+          this.updateAttributeValueForAttr(element);
+      }
     );
     this.addAttrClassToChildred(
       `${this.prefix}class`,
       item,
       ele,
       varName,
-      allNestedKeys
-    );
-    const mainObj = { ...this.lib };
-    allNestedKeys.forEach((currentKey) => {
-      const obj = {
-        ...item,
-        newValue: mainObj,
-        currentPath: item.currentPath + "." + currentKey,
-      };
-      this.modifyMdInputValue(obj, ele, true);
-      this.modifyMdTextValue(obj, ele, true);
-      this.hideShowELement(obj, ele, true);
-    });
-
-    // this.performIfStatementOperation
-  }
-
-  addAttrClassToChildred(selector, item, ele, varName, keys) {
-    const attr = ele.getAttribute(selector);
-    if (attr) {
-      if (attr.includes(varName)) {
-        const arr = attr.split(";").map((temp) => {
-          temp = temp.split("=").map((temp) => temp.trim());
-          if (temp[1] == varName || temp[1].startsWith(varName + ".")) {
-            temp[1] = temp[1].replace(varName, item.currentPath);
-          }
-          return temp;
-        });
-        ele.setAttribute(selector, arr.map((item) => item.join("=")).join(";"));
+      allNestedKeys,
+      (element) => {
+        this.updateClassFromBindProperty(element);
       }
-    }
-    const elements = ele.querySelectorAll(`[${selector}]`);
-    elements.forEach((element) => {
-      this.addAttrClassToChildred(selector, item, element, varName, keys);
-    });
+    );
   }
 
-  addAllAttributeToChildren(selector, item, ele, varName) {
+  getAllVariblesfromAttrAndClass(attr) {
+    return attr.split(";").map(item => item.split("=")[1].trim());
+  }
+
+  //loop operation
+  addAttrClassToChildred(selector, item, ele, varName, keys, cb) {
+    try {
+      const attr = ele.getAttribute(selector);
+      if (attr) {
+        if (attr.includes(varName)) {
+          const arr = attr.split(";").map((temp) => {
+            temp = temp.split("=").map((temp) => temp.trim());
+            if (temp[1] == varName || temp[1].startsWith(varName + ".")) {
+              temp[1] = temp[1].replace(varName, item.currentPath);
+            }
+            return temp;
+          });
+          ele.setAttribute(selector, arr.map((item) => item.join("=")).join(";"));
+          cb(ele)
+        }
+      }
+      const elements = ele.querySelectorAll(`[${selector}]`);
+      elements.forEach((element) => {
+        this.addAttrClassToChildred(selector, item, element, varName, keys, cb);
+      });
+    } catch(e) {
+      console.error(e);
+    }
+    
+  }
+
+  //loop operation
+  addAllAttributeToChildren(selector, item, ele, varName, cb) {
     let attr = ele.getAttribute(selector);
     if (attr) {
       if (attr == varName) {
@@ -807,7 +887,7 @@ class MiniJs {
           selector,
           attr.replaceAll(varName + ".", item.currentPath + ".")
         );
-      } else if (attr && attr.includes("{{")) {
+      } else if (attr?.includes("{{")) {
         attr = this.replaceVarNameInStringLiteral(
           varName,
           attr,
@@ -815,10 +895,11 @@ class MiniJs {
         );
         ele.setAttribute(selector, attr);
       }
+      cb(ele);
     }
     const elements = ele.querySelectorAll(`[${selector}]`);
     elements.forEach((element) => {
-      this.addAllAttributeToChildren(selector, item, element, varName);
+      this.addAllAttributeToChildren(selector, item, element, varName, cb);
     });
   }
 
@@ -950,7 +1031,9 @@ class MiniJs {
     });
   }
 
-  processChangeKeyUpEvent = this.debounceFunc((e) => this.performInputChangeEvent(e));
+  processChangeKeyUpEvent = this.debounceFunc((e) =>
+    this.performInputChangeEvent(e)
+  );
 
   debounceFunc(func, timeout = 300) {
     let timer;
@@ -960,6 +1043,68 @@ class MiniJs {
         func.apply(this, args);
       }, timeout);
     };
+  }
+
+  addMutationObserver() {
+    const targetNode = this.container;
+    // Options for the observer (which mutations to observe)
+    const config = {childList: true, subtree: true};
+
+    // Callback function to execute when mutations are observed
+    const callback = (mutationList, observer) => {
+      for (const mutation of mutationList) {
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach(ele => {
+            if(ele.nodeName != '#text') {
+              this.resetCacheElement(ele);
+            }
+          });
+          mutation.removedNodes.forEach(ele => {
+            if(ele.nodeName != '#text') {
+              this.resetCacheElement(ele);
+            }
+          })
+        }
+      }
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(callback);
+
+    // Start observing the target node for configured mutations
+    observer.observe(targetNode, config);
+  }
+
+  resetCacheElement(ele) {
+    
+    const attributesNode = ele.attributes;
+    for(let i = 0; i < attributesNode.length; i++) {
+      const attrNode = attributesNode[i];
+      if(attrNode.nodeName.startsWith(this.prefix)) {
+        this.cachedElement[attrNode.nodeName] = {}
+      }
+    }
+
+    ["if", "text", "class", "attr", "disabled", "input"].forEach(key => {
+      if(ele.querySelector(`[${this.prefix}${key}]`)) {
+        this.cachedElement[`${this.prefix}${key}`] = {};
+      }
+    })
+
+    // const childNodes = ele.children;
+    // for(let i=0;i<childNodes.length;i++) {
+    //   this.resetCacheElement(childNodes[i]);
+    // }
+  }
+
+  findOrCachedElement(attrName, attrValue) {
+    if (!this.cachedElement[attrName][attrValue]) {
+      const elements = this.container.querySelectorAll(
+        `[${attrName}*="${attrValue}"]`
+      );
+      this.cachedElement[attrName][attrValue] = elements;
+    }
+    return this.cachedElement[attrName][attrValue];
   }
 
   deletePropertInLoop({ item, key, elements }) {
