@@ -85,6 +85,8 @@ class MiniJs {
       .replaceAll(/[\s+()]/g, "")
       .replaceAll(/(&&|\|\|)/g, "__")
       .replaceAll(/(!*)(=+)/g, "__")
+      .replaceAll(/(<)/g, "__")
+      .replaceAll(/(>)/g, "__")
       .split("__")
       .filter((item) => item[0] != '"' && item[0] != "'" && isNaN(item))
       .map((item) => {
@@ -188,9 +190,9 @@ class MiniJs {
         let attr = ele.getAttribute(`${this.prefix}disabled`);
         let func = this.convertStringToFunction(attr);
         if (func()) {
-          ele.disabled = true;
-        } else {
           ele.disabled = false;
+        } else {
+          ele.disabled = true;
         }
       });
     } catch (err) {
@@ -445,42 +447,40 @@ class MiniJs {
       obj = obj?.[item];
     });
     if (e.target.type == "radio" || e.target.type == "checkbox") {
-      this.performCheckBox_RdioButtonChangeEventOperation(e, obj, targetKey)
+      //single checkbox then value as string if multiple then value as array of ftring
+      const selector = `[${this.prefix}input="${e.target.getAttribute(
+        this.prefix + "input"
+      )}"]`;
+      if (
+        e.target.type == "checkbox" &&
+        this.container.querySelectorAll(selector).length > 1
+      ) {
+        if (e.target.checked) {
+          if (!Array.isArray(obj[targetKey])) {
+            obj[targetKey] = [];
+          }
+          obj[targetKey].push(e.target.value);
+        } else {
+          if (obj[targetKey].length) {
+            // const index = obj[targetKey].findIndex(item => item == e.target.value);
+            // obj[targetKey].splice(index, 1);
+            obj[targetKey] = obj[targetKey].filter(
+              (item) => item != e.target.value
+            );
+          }
+        }
+        return;
+      }
+
+      if (e.target.checked) {
+        obj[targetKey] = e.target.value;
+      } else {
+        obj[targetKey] = "";
+      }
     } else {
       obj[targetKey] = e.target.value;
     }
   }
-
-  performCheckBox_RdioButtonChangeEventOperation(e, obj, targetKey) {
-    //single checkbox then value as string if multiple then value as array of ftring
-    const selector = `[${this.prefix}input="${e.target.getAttribute(
-     this.prefix + "input"
-   )}"]`;
-   if (
-     e.target.type == "checkbox" &&
-     this.container.querySelectorAll(selector).length > 1
-   ) {
-     if (e.target.checked) {
-       if (!Array.isArray(obj[targetKey])) {
-         obj[targetKey] = [];
-       }
-       obj[targetKey].push(e.target.value);
-     } else {
-       if (obj[targetKey].length) {
-         obj[targetKey] = obj[targetKey].filter(
-           (item) => item != e.target.value
-         );
-       }
-     }
-     return;
-   }
-
-   if (e.target.checked) {
-     obj[targetKey] = e.target.value;
-   } else {
-     obj[targetKey] = "";
-   }
- }
 
   initInputChanges(data) {
     if (this.container.querySelector(`[${this.prefix}input]`)) {
@@ -816,9 +816,9 @@ class MiniJs {
         let attr = element.getAttribute(`${this.prefix}disabled`);
         let func = this.convertStringToFunction(attr);
         if (func()) {
-          ele.disabled = true;
-        } else {
           ele.disabled = false;
+        } else {
+          ele.disabled = true;
         }
       }
     );

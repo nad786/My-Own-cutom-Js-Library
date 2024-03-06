@@ -91,13 +91,6 @@ class MiniJsFormValidaion {
     this.generateObjectFromControls(this.formObj[this.objKey], formControls);
     this.createMiniJSObj(this.formObj, options);
     ObservableSlim.observe(this.miniJSInstance.lib, (changes = []) => {
-      changes = changes.map(item => {
-        let path = item.currentPath.split(".");
-        if(!isNaN(path.pop())) {
-          item.currentPath = path.join(".");
-        }
-        return item;
-      })
       changes = changes.filter((item) => item.currentPath.endsWith(".value"));
       if (changes.length) {
         this.validateElement(changes);
@@ -227,42 +220,25 @@ class MiniJsFormValidaion {
           path.join(".")
         );
 
-        if (realObj?.validators?.length) {
-            this.formValidation(realObj.validators, realObj, ele, path.pop());
-          }
-        }
+        this.formValidation(realObj.validators, realObj, ele, path.pop());
+      }
     });
   }
 
   formValidation(validationObj = [], targetObj = {}, ele = null, key) {
-    
-    this.formObj[this.objKey].valid = false;
     let error = false;
+    this.formObj[this.objKey].valid = false;
     for (let validatorProp of validationObj) {
       // const validatorProp = validation();
       let errorMsg = "Fields";
       const customErrorMsg = this.errorMsg[key];
       switch (validatorProp?.name) {
         case "required":
-          if(ele.getAttribute("type") == "checkbox") {
-            const name = ele.getAttribute("name");
-            const allCheckboxButtons = this.form.elements[name];
-            let flag = false;
-            allCheckboxButtons.forEach((checkBtn) => {
-              if (checkBtn.checked) {
-                flag = true;
-              }
-            });
-            if(flag) {
-              allCheckboxButtons.forEach((checkBtn) => {
-                checkBtn.setCustomValidity("");
-              });
-            } else {
-              errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
-              error = true;
-            }
-
-          } else if (ele.getAttribute("type") == "radio") {
+          if (ele.getAttribute("type") == "checkbox" && !ele.checked) {
+            errorMsg =  customErrorMsg.required ? customErrorMsg.required : "Mandatory Field";
+            error = true;
+          }
+          if (ele.getAttribute("type") == "radio") {
             const name = ele.getAttribute("name");
             const allRadioButton = this.form.elements[name];
             let flag = false;
@@ -275,7 +251,8 @@ class MiniJsFormValidaion {
               errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
               error = true;
             }
-          }else if (!ele.value) {
+          }
+          if (!ele.value) {
             errorMsg =  customErrorMsg?.required ? customErrorMsg.required : "Mandatory Field";
             error = true;
           }
@@ -338,8 +315,8 @@ class MiniJsFormValidaion {
       }
       if(error) {
         ele.setCustomValidity(errorMsg);
-        targetObj.valid = false;
         targetObj.error = errorMsg;
+        targetObj.valid = false;
         return;
       }
     }
@@ -354,8 +331,8 @@ class MiniJsFormValidaion {
         });
       }
       ele.setCustomValidity("");
-      targetObj.valid = true;
       targetObj.error = "";
+      targetObj.valid = true;
     }
     this.formObj[this.objKey].valid = this.form.checkValidity?.();
   }
@@ -366,7 +343,7 @@ class MiniJsFormValidaion {
     this.form.addEventListener("keydown", this.boundFormKeyDownEvent);
     this.form.addEventListener("change",this.boundFormChangeEvent);
     if (typeof jQuery != "undefined") {
-      $(this.form).on("select2:select", this.boundFormChangeEvent);
+      $(this.form).on("select2:select select2:unselecting", this.boundFormChangeEvent);
       $(this.form).on("datepickerChanged", this.boundFormChangeEvent);
     }
   }
@@ -392,27 +369,31 @@ class MiniJsFormValidaion {
         return false;
       }
     }
-
-    const obj = this.getTargetObjectOfFormControlELement(e.target);
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      obj.value = e.target.value;
-      obj.dirty = true;
-    }, 300);
+    
+      const obj = this.getTargetObjectOfFormControlELement(e.target);
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        obj.value = e.target.value;
+        setTimeout(() => {
+          obj.dirty = true;
+        }, 10)
+      }, 300);
   }
 
   formChangeEvent(e) {
     const obj = this.getTargetObjectOfFormControlELement(e.target);
-    if (e.target.type == "radio" || e.target.type == "checkbox") {
-      this.miniJSInstance.performCheckBox_RdioButtonChangeEventOperation(e, obj, "value")
-    } else {
-      obj.value = e.target.value;
-    }
-    obj.dirty = true;
+    obj.value = e.target.value;
+    setTimeout(() => {
+      obj.dirty = true;
+    }, 10)
   }
 
   getTargetObjectOfFormControlELement(ele) {
-    const splittedKey = ele.getAttribute(`${this.prefix}input`).split(".");
+    const attr = ele.getAttribute(`${this.prefix}input`);
+    if(!attr) {
+      return ""
+    }
+    const splittedKey = attr.split(".");
     splittedKey.pop();
     return this.miniJSInstance.getValueFromkeyWithDot(
       this.formObj,
@@ -471,7 +452,15 @@ class MiniJsFormValidaion {
       } else if (typeof obj[key] == "object") {
         this.patchValues(obj[key], formObj.controls[key]);
       } else {
-        formObj.controls[key].value = obj[key];
+        if(formObj.controls[key]) {
+          formObj.controls[key].value = obj[key];
+          // if(!obj[key]) {
+          //   this.validateElement({
+          //     currentPath: `${this.objKey}.controls.${key}.value`,
+          //     newValue: obj[key]
+          //   })
+          // }
+        }
       }
     }
   }
@@ -494,7 +483,7 @@ class MiniJsFormValidaion {
     this.form.removeEventListener("keydown", this.boundFormKeyDownEvent);
     this.form.removeEventListener("change",this.boundFormChangeEvent);
     if (typeof jQuery != "undefined") {
-      $(this.form).off("select2:select", this.boundFormChangeEvent);
+      $(this.form).off("select2:select select2:unselecting", this.boundFormChangeEvent);
       $(this.form).off("datepickerChanged", this.boundFormChangeEvent);
     }
   }
@@ -521,7 +510,6 @@ class MiniJsFormValidaion {
       ...options,
       parentSelector: options?.selector ? options.selector : "form",
     });
-    instance.formObj[instance.objKey].valid = instance.form.checkValidity?.();
     return {
       patchValues: instance.patchValues.bind(instance),
       destroy: instance.destroy.bind(instance),
