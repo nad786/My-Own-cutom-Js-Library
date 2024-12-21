@@ -71,7 +71,7 @@ class FormControl {
     this.allowedChar = allowedChar;
   }
 }
-class MiniJsFormValidaion {
+class MiniJsFormValidation {
   form = null;
   prefix = null;
   formObj = {};
@@ -382,7 +382,23 @@ class MiniJsFormValidaion {
 
   formChangeEvent(e) {
     const obj = this.getTargetObjectOfFormControlELement(e.target);
-    obj.value = e.target.value;
+    if(e.target.getAttribute('type') == 'checkbox') {
+      if(e.target.checked) {
+        if(typeof obj.value == 'object') {
+          obj.value.push(e.target.value);
+        } else {
+          obj.value = e.target.value
+        }
+      } else {
+        if(typeof obj.value == 'object') {
+          obj.value = obj.value.filter(item => item != e.target.value);
+        } else {
+          obj.value = ""
+        }
+      }
+    } else {
+      obj.value = e.target.value;
+    }
     setTimeout(() => {
       obj.dirty = true;
     }, 10)
@@ -497,7 +513,7 @@ class MiniJsFormValidaion {
   }
 
   static buildForm(obj, options = {}) {
-    const instance = new MiniJsFormValidaion(options);
+    const instance = new MiniJsFormValidation(options);
     instance.updateDetectChanges(options.detectValueChanges);
     instance.errorMsg = options.errorMsg ? options.errorMsg: {};
     instance.addEventListenerToForm();

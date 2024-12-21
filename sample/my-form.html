@@ -112,8 +112,8 @@ input[type="submit"]:hover {
     <div class="row">
         <label>Hobbies <i>(Optional)</i></label>
         <div class="form-inline">
-            <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="sports"> Sports</label>
-            <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="movies"> Movies</label>
+            <!-- <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="sports"> Sports</label> -->
+            <!-- <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="movies"> Movies</label> -->
             <label><input type="checkbox" formControlName="hobbies" name="hobbies[]" value="music"> Music</label>
         </div>
     </div>
@@ -123,7 +123,7 @@ input[type="submit"]:hover {
 </form>
 
 <script>
-    const formInstance = MiniJsFormValidaion.buildForm({
+    const formInstance = MiniJsFormValidation.buildForm({
     name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
     email: new FormControl("", [Validators.required, Validators.email]),
     mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
@@ -134,7 +134,7 @@ input[type="submit"]:hover {
     })]),
     gender: new FormControl("", Validators.required),
     country: new FormControl("", Validators.required),
-    hobbies: new FormControl(["music", "movies"])
+    hobbies: new FormControl("music")
 });
 
 function validateForm() {

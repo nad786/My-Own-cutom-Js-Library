@@ -87,131 +87,22 @@ button:disabled,button:disabled:hover {
 </style>
 </head>
 <body>
-    <div class="grid-2">
-        <div class="form">
-            <form name="contactForm" formGroup="contactForm">
-                <h2>Application Form</h2>
-                <div class="row">
-                    <label>Full Name</label>
-                    <input autocomplete="off" formControlName="name" type="text" name="name">
-                    <div class="error" data-id="test" wns-text="contactForm.controls.name.error"></div>
-                </div>
-                <div class="row">
-                    <label>Email Address</label>
-                    <input autocomplete="off" type="text" formControlName="email" name="email">
-                    <div class="error" wns-text="contactForm.controls.email.error"></div>
-                </div>
-                <div class="row">
-                    <label>Mobile Number</label>
-                    <input autocomplete="off" type="text" formControlName="mobile" name="mobile">
-                    <div class="error" wns-text="contactForm.controls.mobile.error"></div>
-                </div>
-                <div class="row">
-                    <label>Comment</label>
-                    <textarea autocomplete="off" formControlName="comment"></textarea>
-                    <div class="error" wns-text="contactForm.controls.comment.error"></div>
-                </div>
 
-                <div class="row">
-                    <label>Country</label>
-                    <select name="country" class="country" formControlName="country">
-                        <option>Select</option>
-                        <option>Australia</option>
-                        <option>India</option>
-                        <option>United States</option>
-                        <option>United Kingdom</option>
-                    </select>
-                    <div class="error" wns-text="contactForm.controls.country.error"></div>
-                </div>
-                <div class="row">
-                    <label>Gender</label>
-                    <div class="form-inline">
-                        <label><input formControlName="gender" type="radio" name="gender" value="male"> Male</label>
-                        <label><input type="radio" formControlName="gender" name="gender" value="female"> Female</label>
-                    </div>
-                    <div class="error" wns-text="contactForm.controls.gender.error"></div>
-                </div>
-                <div class="row">
-                    <label>Hobbies <i>(Optional)</i></label>
-                    <div class="form-inline">
-                        <label><input type="checkbox" formControlName="hobbies" name="hobbies" value="sports"> Sports</label>
-                        <label><input type="checkbox" formControlName="hobbies" name="hobbies" value="movies"> Movies</label>
-                        <label><input type="checkbox" formControlName="hobbies" name="hobbies" value="music"> Music</label>
-                    </div>
-                    <div class="error" wns-text="contactForm.controls.hobbies.error"></div>
-                </div>
-                <div class="row">
-                    <button type="button" wns-disabled="!contactForm.valid" onclick="validateForm()">Submit</button>
-                </div>
-            </form>
-        </div>
- 
-        <div class="code">
-            <h1>Html code for same</h1>
-            <pre>
-&#60;form name="contactForm" formGroup="contactForm">
-    &#60;h2>Application Form&#60;/h2>
-    &#60;div class="row">
-        &#60;label>Full Name&#60;/label>
-        &#60;input formControlName="name" type="text" name="name">
-        &#60;div class="error" wns-text="contactForm.controls.name.error">&#60;/div>
-    &#60;/div>
-&#60;/form>
-            </pre>
-            <h1>Js Code For Same</h1>
-            <pre>
-const formInstance = MiniJsFormValidaion.buildForm({
-    name: new FormControl("",
-                [
-                 Validators.required,
-                 Validators.minLength(3),
-                 Validators.maxLength(10)
-                ]
-            )
-});
-            </pre>
-            <h1>Exposed Field</h1>
-            <div>contactForm.controls.name.error:- default generic error message, can be modified by passing optionals argumenets</div>
-            <div>contactForm.controls.name.value:- form control value</div>
-            <div>contactForm.controls.name.touched:- true if form control touched by user</div>
-            <div>contactForm.controls.name.dirty:- true if form control modified by user</div>
-        </div>
-    </div>
- 
- 
-<script>
-     $('.country').select2();
-    const formInstance = MiniJsFormValidaion.buildForm({
-    // name: new FormControl("", [Validators.required, Validators.minLength(3), Validators.maxLength(10)]),
-    // email: new FormControl("", [Validators.required, Validators.email]),
-    // comment: new FormControl("", Validators.required),
-    // mobile: new FormControl("", [Validators.required, Validators.custom((value) => {
-    //     if(value.length != 10 || isNaN(value) || !value.startsWith("9")) {
-    //         return "Please enter valid mobile number";
-    //     }
-    //     return "";
-    // })]),
-    // gender: new FormControl("", Validators.required),
-    // country: new FormControl("", Validators.required),
-    hobbies: new FormControl(["music", "movies"], Validators.required)
-}, {
-    errorMsg: {
-        name: {
-            required: "Enter Name field",
-            minLength: "MinLength"
-        },
-        country: {
-            required: "Select Country field"
-        }
-    }
-}); 
+    <input type="file=">
 
-console.timeEnd('form');
- 
-function validateForm() {
-    window.alert(JSON.stringify(formInstance.getValues()));
-}
-</script>
+    <script>
+        // Assuming 'pdfData' is the binary data of the PDF file
+        var pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
+        var blobUrl = URL.createObjectURL(pdfBlob);
+
+        var downloadLink = document.createElement('a');
+        downloadLink.href = blobUrl;
+        downloadLink.download = 'new_display_name.pdf'; // Set the desired display name
+        downloadLink.innerHTML = 'Download Custom Name'; // Set the text content of the link
+
+        document.body.appendChild(downloadLink); // Append the link to the document
+
+    </script>
  
 </body>
 </html>
